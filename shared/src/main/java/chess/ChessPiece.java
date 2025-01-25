@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -17,6 +18,20 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
     }
 
     /**
@@ -55,6 +70,44 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         PieceType piece = getPieceType();
         Collection<ChessMove> moves = new ArrayList<>();
+
+        if (piece == PieceType.KING) {
+            int row = myPosition.getRow();
+            int column = myPosition.getColumn();
+            row++;
+            if (row <= 8) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            column++;
+            if (row <= 8 && column <= 8) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            row--;
+            if (column <= 8) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            row--;
+            if (row >= 1 && column <= 8) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            column--;
+            if (row >= 1) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            column--;
+            if (row >= 1 && column >= 1) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            row++;
+            if (column >= 1) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+            row++;
+            if (row <= 8 && column >= 1) {
+                kingOccupiedSpace(board, myPosition, moves, row, column);
+            }
+        }
+
         if (piece == PieceType.BISHOP) {
             int row1 = myPosition.getRow();
             int column1 = myPosition.getColumn();
@@ -126,5 +179,18 @@ public class ChessPiece {
             }
         }
         return moves;
+    }
+
+    private void kingOccupiedSpace(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int row, int column) {
+        ChessPosition newPosition = new ChessPosition(row, column);
+        if (board.getPiece(newPosition) == null) {
+            ChessMove move = new ChessMove(myPosition, newPosition, null);
+            moves.add(move);
+        } else {
+            if (board.getPiece(newPosition).getTeamColor() != pieceColor) {
+                ChessMove move = new ChessMove(myPosition, newPosition, null);
+                moves.add(move);
+            }
+        }
     }
 }
