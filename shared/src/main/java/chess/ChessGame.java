@@ -1,6 +1,10 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+
+import static chess.ChessPiece.PieceType.KING;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -46,7 +50,25 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessBoard board = getBoard();
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        } else {
+            TeamColor pieceColor = piece.getTeamColor();
+            Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+            Iterator<ChessMove> iterator = moves.iterator();
+            while (iterator.hasNext()) {
+                ChessMove move = iterator.next();
+                ChessBoard newBoard = getBoard();
+                newBoard.addPiece(move.getStartPosition(), null);
+                newBoard.addPiece(move.getEndPosition(), piece);
+                if (isInCheck(pieceColor)) {
+                    iterator.remove();
+                }
+            }
+            return moves;
+        }
     }
 
     /**
@@ -56,7 +78,16 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessBoard board = getBoard();
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        ChessPiece piece = board.getPiece(startPosition);
+        if (validMoves(startPosition).contains(move)) {
+            board.addPiece(startPosition, null);
+            board.addPiece(endPosition, piece);
+        } else {
+            throw new InvalidMoveException();
+        }
     }
 
     /**
@@ -66,7 +97,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+
     }
 
     /**
