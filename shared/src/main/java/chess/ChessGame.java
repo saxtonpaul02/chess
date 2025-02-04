@@ -147,43 +147,19 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            ChessPosition kingPosition = null;
-            Collection<ChessMove> kingMoves = new ArrayList<>();
-            Map<ChessPosition, ChessPiece> checkingPieces = new HashMap<>();
-            Set<ChessPosition> teamMovePositions = new HashSet<>();
             for (int i = 1; i <= 8; i++) {
                 for (int j = 1; j <= 8; j++) {
-                    ChessPosition testPosition = new ChessPosition(i, j);
+                    ChessPosition testPosition = new ChessPosition(i,j);
                     ChessPiece testPiece = currentBoard.getPiece(testPosition);
-                    if (testPiece != null) {
-                        if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() == KING) {
-                            kingPosition = testPosition;
-                            kingMoves = validMoves(testPosition);
-                        } else if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() != KING) {
-                            Collection<ChessMove> teamMoves = validMoves(testPosition);
-                            for (ChessMove teamMove : teamMoves) {
-                                teamMovePositions.add(teamMove.getEndPosition());
-                            }
-                        } else if (testPiece.getTeamColor() != teamColor && testPiece.getPieceType() != null) {
-                            Collection<ChessMove> testMoves = validMoves(testPosition);
-                            for (ChessMove testMove : testMoves) {
-                                if (testMove.getEndPosition().equals(kingPosition)) {
-                                    checkingPieces.put(testPosition, testPiece);
-                                }
-                            }
+                    if (testPiece != null && testPiece.getTeamColor() == teamColor) {
+                        Collection<ChessMove> testMoves = validMoves(testPosition);
+                        if (!testMoves.isEmpty()) {
+                            return false;
                         }
                     }
                 }
             }
-            if (!kingMoves.isEmpty()) {
-                return false;
-            } else if (checkingPieces.size() > 1) {
-                return true;
-            } else {
-                for (ChessPosition checkingPiecesPosition : checkingPieces.keySet()) {
-                    return !piecesCanBlockCheck(teamMovePositions, checkingPiecesPosition, checkingPieces.get(checkingPiecesPosition), kingPosition);
-                }
-            }
+            return true;
         }
         return false;
     }
@@ -197,19 +173,25 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (teamColor == getTeamTurn()) {
-            Collection<ChessMove> kingMoves = new ArrayList<>();
-            for (int i = 1; i <= 8; i++) {
-                for (int j = 1; j <= 8; j++) {
-                    ChessPosition testPosition = new ChessPosition(i, j);
-                    ChessPiece testPiece = currentBoard.getPiece(testPosition);
-                    if (testPiece != null) {
-                        if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() == KING) {
-                            kingMoves = validMoves(testPosition);
+            if (!isInCheck(teamColor)) {
+                Collection<ChessMove> kingMoves = new ArrayList<>();
+                for (int i = 1; i <= 8; i++) {
+                    for (int j = 1; j <= 8; j++) {
+                        ChessPosition testPosition = new ChessPosition(i, j);
+                        ChessPiece testPiece = currentBoard.getPiece(testPosition);
+                        if (testPiece != null) {
+                            if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() == KING) {
+                                kingMoves = validMoves(testPosition);
+                            } else if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() != KING) {
+                                if (!validMoves(testPosition).isEmpty()) {
+                                    return false;
+                                }
+                            }
                         }
                     }
                 }
+                return kingMoves.isEmpty();
             }
-            return kingMoves.isEmpty();
         }
         return false;
     }
@@ -230,68 +212,6 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return currentBoard;
-    }
-
-    /**
-     * Determines if the king's team members can get the king out of check by taking or blocking the
-     * checking piece, performed after having determined the king cannot get himself out of check
-     * and that there is only one checking piece
-     *
-     * @param teamMovePositions the set of all possible positions for the king's team members to move to
-     * @param checkingPiecePosition the position of the piece checking the king
-     * @param checkingPiece the type of piece checking the king
-     * @param kingPosition the position of the king
-     * @return True if the piece checking the king can be legally taken or if check can be blocked by one
-     * of the king's team members, otherwise false
-     */
-
-    private boolean piecesCanBlockCheck(Set<ChessPosition> teamMovePositions, ChessPosition checkingPiecePosition, ChessPiece checkingPiece, ChessPosition kingPosition) {
-        if (teamMovePositions.contains(checkingPiecePosition)) return true;
-        else if (checkingPiece.getPieceType() == PAWN || checkingPiece.getPieceType() == KNIGHT) return false;
-        else {
-            int rowDiff = kingPosition.getRow() - checkingPiecePosition.getRow();
-            int colDiff = kingPosition.getColumn() - checkingPiecePosition.getColumn();
-            if (Math.abs(rowDiff) == Math.abs(colDiff)) {
-                for (ChessPosition teamPosition : teamMovePositions) {
-                    int teamRowDiff = kingPosition.getRow() - teamPosition.getRow();
-                    int teamColDiff = kingPosition.getColumn() - teamPosition.getColumn();
-                    if (Math.abs(teamRowDiff) == Math.abs(teamColDiff) && Math.abs(teamRowDiff) < Math.abs(rowDiff)) {
-                        if (rowDiff > 0 && colDiff > 0 && teamRowDiff > 0 && teamColDiff > 0) return true;
-                        else if (rowDiff > 0 && colDiff < 0 && teamRowDiff > 0 && teamColDiff < 0) return true;
-                        else if (rowDiff < 0 && colDiff > 0 && teamRowDiff < 0 && teamColDiff > 0) return true;
-                        else if (rowDiff < 0 && colDiff < 0 && teamRowDiff < 0 && teamColDiff < 0) return true;
-                        else continue;
-                    } else continue;
-                }
-            } else if (rowDiff == 0) {
-                for (ChessPosition teamPosition : teamMovePositions) {
-                    int teamRow = teamPosition.getRow();
-                    int kingRow = kingPosition.getRow();
-                    if (teamRow == kingRow) {
-                        int teamCol = teamPosition.getColumn();
-                        int kingCol = kingPosition.getColumn();
-                        int opponentCol = checkingPiecePosition.getColumn();
-                        if (kingCol < teamCol && teamCol < opponentCol) return true;
-                        else if (kingCol > teamCol && teamCol > opponentCol) return true;
-                        else continue;
-                    } else continue;
-                }
-            } else {
-                for (ChessPosition teamPosition : teamMovePositions) {
-                    int teamCol = teamPosition.getColumn();
-                    int kingCol = kingPosition.getColumn();
-                    if (teamCol == kingCol) {
-                        int teamRow = teamPosition.getRow();
-                        int kingRow = kingPosition.getRow();
-                        int opponentRow = checkingPiecePosition.getRow();
-                        if (kingRow < teamRow && teamRow < opponentRow) return true;
-                        else if (kingRow > teamRow && teamRow > opponentRow) return true;
-                        else continue;
-                    } else continue;
-                }
-            }
-        }
-        return false;
     }
 }
 
