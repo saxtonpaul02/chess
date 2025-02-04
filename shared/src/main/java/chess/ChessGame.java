@@ -14,6 +14,8 @@ public class ChessGame {
 
     private TeamColor currentTurn = TeamColor.WHITE;
     private ChessBoard currentBoard = new ChessBoard();
+    private ChessMove lastMove = new ChessMove(null, null, null);
+    private ChessPiece lastMovePiece = new ChessPiece(null, null);
 
     public ChessGame() {
         currentBoard.resetBoard();
@@ -36,6 +38,52 @@ public class ChessGame {
     }
 
     /**
+     * @return The most recent move made in the game
+     */
+    public ChessMove getLastMove() {
+        return lastMove;
+    }
+
+    /**
+     * Set's the most recent move made in the game
+     *
+      * @param move the most recent move made in the game
+     */
+    public void setLastMove(ChessMove move) {
+        lastMove = move;
+    }
+
+    /**
+     * @return The piece that made the most recent move
+     */
+    public ChessPiece getLastMovePiece() {
+        return lastMovePiece;
+    }
+
+    /**
+     * Set's the piece that made the most recent move
+     *
+     * @param piece The piece that made the most recent move
+     */
+    public void setLastMovePiece(ChessPiece piece) {
+        lastMovePiece = piece;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return currentTurn == chessGame.currentTurn && Objects.equals(currentBoard, chessGame.currentBoard) && Objects.equals(lastMove, chessGame.lastMove);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentTurn, currentBoard, lastMove);
+    }
+
+    /**
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
@@ -44,7 +92,7 @@ public class ChessGame {
     }
 
     /**
-     * Gets a valid moves for a piece at the given location
+     * Gets a collection of valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
      * @return Set of valid moves for requested piece, or null if no piece at
@@ -57,6 +105,16 @@ public class ChessGame {
         } else {
             TeamColor pieceColor = piece.getTeamColor();
             Collection<ChessMove> moves = piece.pieceMoves(currentBoard, startPosition);
+            if (isEnPassant(startPosition)) {
+                ChessPosition endPosition;
+                if (piece.getTeamColor() == TeamColor.WHITE) {
+                    endPosition = new ChessPosition(6, lastMove.getEndPosition().getColumn());
+                } else {
+                    endPosition = new ChessPosition(3, lastMove.getEndPosition().getColumn());
+                }
+                ChessMove newMove = new ChessMove(startPosition, endPosition, null);
+                moves.add(newMove);
+            }
             Collection<ChessMove> valid = new ArrayList<>();
             currentBoard.addPiece(startPosition,null);
             for (ChessMove move: moves) {
@@ -95,6 +153,19 @@ public class ChessGame {
             } else {
                 newPiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
             }
+            if (piece.getPieceType() == PAWN) {
+                if (isEnPassant(startPosition)) {
+                    if (piece.getTeamColor() == TeamColor.WHITE) {
+                        if (endPosition.getRow() == 6 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
+                            currentBoard.addPiece(lastMove.getEndPosition(), null);
+                        }
+                    } else {
+                        if (endPosition.getRow() == 3 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
+                            currentBoard.addPiece(lastMove.getEndPosition(), null);
+                        }
+                    }
+                }
+            }
             currentBoard.addPiece(startPosition, null);
             currentBoard.addPiece(endPosition, newPiece);
             if (piece.getTeamColor() == TeamColor.WHITE) {
@@ -102,6 +173,8 @@ public class ChessGame {
             } else {
                 setTeamTurn(TeamColor.WHITE);
             }
+            setLastMove(move);
+            setLastMovePiece(piece);
         }
     }
 
@@ -211,6 +284,32 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return currentBoard;
+    }
+
+    /**
+     * Determines if en passant can be played on current move by piece at given starting position
+     *
+     * @param startPosition the starting position of the piece in question
+     * @return True if en passant can be played on current move, otherwise false
+     */
+    public boolean isEnPassant(ChessPosition startPosition) {
+        if (lastMovePiece.getPieceType() == PAWN) {
+            ChessPiece piece = currentBoard.getPiece(startPosition);
+            if (piece.getPieceType() == PAWN && piece.getTeamColor() == TeamColor.WHITE) {
+                if (lastMove.getStartPosition().getRow() == 7 && lastMove.getEndPosition().getRow() == 5) {
+                    if (startPosition.getRow() == 5) {
+                        return Math.abs(lastMove.getEndPosition().getColumn() - startPosition.getColumn()) == 1;
+                    }
+                }
+            } else if (piece.getPieceType() == PAWN && piece.getTeamColor() == TeamColor.BLACK) {
+                if (lastMove.getStartPosition().getRow() == 2 && lastMove.getEndPosition().getRow() == 4) {
+                    if (startPosition.getRow() == 4) {
+                        return Math.abs(lastMove.getEndPosition().getColumn() - startPosition.getColumn()) == 1;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 
