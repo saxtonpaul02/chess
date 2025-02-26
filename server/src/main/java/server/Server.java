@@ -1,8 +1,21 @@
 package server;
 
+import dataaccess.DataAccessException;
+import org.eclipse.jetty.server.Authentication;
+import service.ClearService;
+import service.GameService;
+import service.UserService;
 import spark.*;
 
 public class Server {
+
+    public ClearService clearService;
+    public GameService gameService;
+    public UserService userService;
+
+    public Server() {
+
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -10,9 +23,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-
-        //This line initializes the server and can be removed once you have a functioning endpoint 
-        Spark.init();
+        Spark.delete("/db", this::clearDatabase);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -21,5 +32,11 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private Object clearDatabase(Request req, Response res) throws DataAccessException {
+        clearService.clearDatabase();
+        res.status(204);
+        return "";
     }
 }
