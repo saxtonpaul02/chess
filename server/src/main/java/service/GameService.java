@@ -1,8 +1,14 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.AuthData;
+import model.GameData;
+import request.CreateRequest;
+import request.JoinRequest;
+import result.CreateResult;
 
 public class GameService {
 
@@ -14,10 +20,47 @@ public class GameService {
         this.gameDao = gameDao;
     }
 
-//    public ListResult list(ListRequest listRequest) {}
-//
-//    public CreateResult create(CreateRequest createRequest) {}
-//
-//    public JoinResult join(JoinRequest joinRequest) {}
+    public CreateResult create(CreateRequest createRequest) throws DataAccessException {
+        String authToken = createRequest.authToken();
+        AuthData authData = authDao.getAuth(authToken);
+        if (authData != null) {
+            String gameName = createRequest.gameName();
+            GameData gameData = gameDao.create(gameName);
+            return new CreateResult(gameData.gameID());
+        } else {
+            return null;
+        }
+    }
 
+    public int join(JoinRequest joinRequest) throws DataAccessException {
+        String authToken = joinRequest.authToken();
+        AuthData authData = authDao.getAuth(authToken);
+        if (authData == null) {
+            return 0;
+        } else {
+            GameData gameData = gameDao.getGame(joinRequest.gameID());
+            ChessGame.TeamColor playerColor = joinRequest.playerColor();
+            if (gameData == null) {
+                return 3;
+            } else if (playerColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) {
+                return 2;
+            } else if (playerColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
+                return 2;
+            } else if (playerColor != ChessGame.TeamColor.WHITE && playerColor != ChessGame.TeamColor.BLACK) {
+                return 4;
+            } else {
+                gameDao.updateGame(gameData, authData, joinRequest.playerColor());
+                return 1;
+            }
+        }
+    }
+
+    public list(String authToken) throws DataAccessException{
+        AuthData authData = authDao.getAuth(authToken);
+        if (authData == null) {
+
+        } else {
+
+        }
+    }
 }

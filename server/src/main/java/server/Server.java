@@ -7,7 +7,6 @@ import org.eclipse.jetty.server.Authentication;
 import service.*;
 import spark.*;
 import com.google.gson.Gson;
-import model.*;
 import request.*;
 import result.*;
 
@@ -28,10 +27,13 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        Spark.delete("/db", this::clearDatabase);
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
+        Spark.post("/game", this::create);
+        Spark.put("/game", this::join);
+        Spark.get("/game", this::list);
+        Spark.delete("/db", this::clear);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -96,8 +98,62 @@ public class Server {
         }
     }
 
-    private Object clearDatabase(Request req, Response res) throws DataAccessException {
-        clearService.clearDatabase();
+    private Object create(Request req, Response res) throws DataAccessException {
+        try {
+            String authToken = req.headers("Authorization");
+            CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
+            createRequest = createRequest.setAuthToken(authToken);
+            if (createRequest.authToken() == null || createRequest.gameName() == null) {
+                res.status(400);
+                return new Gson().toJson(new ErrorException("Error: bad request"));
+            }
+            CreateResult createResult = gameService.create(createRequest);
+            if (createResult == null) {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            } else {
+                return new Gson().toJson(createResult);
+            }
+        } catch (JsonSyntaxException e) {
+            res.status(400);
+            return new Gson().toJson(new ErrorException("Error: bad request"));
+        }
+    }
+
+    private Object join(Request req, Response res) throws DataAccessException {
+        try {
+            String authToken = req.headers("Authorization");
+            JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
+            joinRequest = joinRequest.setAuthToken(authToken);
+            if (joinRequest.authToken() == null || joinRequest.playerColor() == null) {
+                res.status(400);
+                return new Gson().toJson(new ErrorException("Error: bad request"));
+            }
+            int joinResult = gameService.join(joinRequest);
+            if (joinResult == 0) {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            } else if (joinResult == 1) {
+                return "{}";
+            } else if (joinResult == 2) {
+                res.status(403);
+                return new Gson().toJson(new ErrorException("Error: already taken"));
+            } else {
+                res.status(400);
+                return new Gson().toJson(new ErrorException("Error: bad request"));
+            }
+        } catch (JsonSyntaxException e) {
+            res.status(400);
+            return new Gson().toJson(new ErrorException("Error: bad request"));
+        }
+    }
+
+    private Object list(Request req, Response res) throws DataAccessException {
+        String authToken = req.headers("Authorization");
+    }
+
+    private Object clear(Request req, Response res) throws DataAccessException {
+        clearService.clear();
         res.status(200);
         return "{}";
     }

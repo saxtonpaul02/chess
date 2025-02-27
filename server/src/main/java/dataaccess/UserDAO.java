@@ -9,5 +9,5 @@ public interface UserDAO {
 
     UserData createUser(RegisterRequest registerRequest) throws DataAccessException;
 
-    void clearUserDatabase() throws DataAccessException;
+    void clearUser() throws DataAccessException;
 }
