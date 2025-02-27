@@ -1,6 +1,13 @@
 package dataaccess;
 
+import model.UserData;
+import request.RegisterRequest;
+
 public interface UserDAO {
 
-    void clear() throws DataAccessException;
+    UserData getUser(String username) throws DataAccessException;
+
+    UserData createUser(RegisterRequest registerRequest) throws DataAccessException;
+
+    void clearUserDatabase() throws DataAccessException;
 }
