@@ -9,6 +9,9 @@ import model.GameData;
 import request.CreateRequest;
 import request.JoinRequest;
 import result.CreateResult;
+import result.ListResult;
+
+import java.util.Collection;
 
 public class GameService {
 
@@ -55,12 +58,12 @@ public class GameService {
         }
     }
 
-    public list(String authToken) throws DataAccessException{
+    public Collection<ListResult> list(String authToken) throws DataAccessException{
         AuthData authData = authDao.getAuth(authToken);
         if (authData == null) {
-
+            return null;
         } else {
-
+            return gameDao.listGames();
         }
     }
 }

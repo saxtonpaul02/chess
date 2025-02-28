@@ -9,6 +9,7 @@ import spark.*;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
+import java.util.Map;
 
 public class Server {
 
@@ -50,13 +51,13 @@ public class Server {
             if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
                 res.status(400);
                 return new Gson().toJson(new ErrorException("Error: bad request"));
-            } else if (registerRequest.username().length() < 3) {
+            } else if (registerRequest.username().isEmpty()) {
                 res.status(500);
                 return new Gson().toJson(new ErrorException("Error: username too short"));
-            } else if (registerRequest.password().length() < 3) {
+            } else if (registerRequest.password().isEmpty()) {
                 res.status(500);
                 return new Gson().toJson(new ErrorException("Error: password too short"));
-            } else if (registerRequest.email().length() < 7 || !registerRequest.email().contains("@")) {
+            } else if (registerRequest.email().isEmpty()) {
                 res.status(500);
                 return new Gson().toJson(new ErrorException("Error: invalid email"));
             }
@@ -150,6 +151,13 @@ public class Server {
 
     private Object list(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
+        var listResult = gameService.list(authToken);
+        if (listResult == null) {
+            res.status(401);
+            return new Gson().toJson(new ErrorException("Error: unauthorized"));
+        } else {
+            return new Gson().toJson(Map.of("games", listResult));
+        }
     }
 
     private Object clear(Request req, Response res) throws DataAccessException {

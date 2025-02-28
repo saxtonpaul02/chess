@@ -3,6 +3,9 @@ package dataaccess;
 import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
+import result.ListResult;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 
 public class MemoryGameDAO implements GameDAO {
@@ -37,8 +40,14 @@ public class MemoryGameDAO implements GameDAO {
         gameDataSet.add(newGameData);
     }
 
-    public listGames() {
-
+    public Collection<ListResult> listGames() {
+        Collection<ListResult> list = new ArrayList<>();
+        for (GameData gameData : gameDataSet) {
+            ListResult listResult = new ListResult(gameData.gameID(),
+                    gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName());
+            list.add(listResult);
+        }
+        return list;
     }
 
     public void clearGame() {
