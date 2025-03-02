@@ -15,12 +15,12 @@ import java.util.Collection;
 public class ServiceClassTests {
 
     private static Server server;
-    private static final AuthDAO authDao = new MemoryAuthDAO();
-    private static final GameDAO gameDao = new MemoryGameDAO();
-    private static final UserDAO userDao = new MemoryUserDAO();
-    private static final ClearService clearService = new ClearService(authDao, gameDao, userDao);
-    private static final GameService gameService = new GameService(authDao, gameDao);
-    private static final UserService userService = new UserService(authDao, userDao);
+    private static final AuthDAO authDAO = new MemoryAuthDAO();
+    private static final GameDAO gameDAO = new MemoryGameDAO();
+    private static final UserDAO userDAO = new MemoryUserDAO();
+    private static final ClearService clearService = new ClearService(authDAO, gameDAO, userDAO);
+    private static final GameService gameService = new GameService(authDAO, gameDAO);
+    private static final UserService userService = new UserService(authDAO, userDAO);
     private static String existingAuth;
     private static int existingGameID;
 
@@ -33,7 +33,7 @@ public class ServiceClassTests {
     public static void init() {
         server = new Server();
         var port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
+        System.out.println("Started test service classes on " + port);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ServiceClassTests {
     public void successLogout() throws DataAccessException {
         boolean logoutResult = userService.logout(existingAuth);
         Assertions.assertTrue(logoutResult, "logout() returned false");
-        Assertions.assertNull(authDao.getAuth(existingAuth), "logout() did not delete authData from database");
+        Assertions.assertNull(authDAO.getAuth(existingAuth), "logout() did not delete authData from database");
     }
 
     @Test
@@ -119,9 +119,9 @@ public class ServiceClassTests {
         CreateRequest createRequest = new CreateRequest(existingAuth, "game1");
         CreateResult actualResult = gameService.create(createRequest);
         Assertions.assertNotNull(actualResult, "create() returned null");
-        Assertions.assertNotNull(gameDao.getGame(actualResult.gameID()), "GameID was not found in database");
+        Assertions.assertNotNull(gameDAO.getGame(actualResult.gameID()), "GameID was not found in database");
         existingGameID = actualResult.gameID();
-        GameData existingGame = gameDao.getGame(existingGameID);
+        GameData existingGame = gameDAO.getGame(existingGameID);
         Assertions.assertNull(existingGame.whiteUsername(), "create() does not give null white username");
         Assertions.assertNull(existingGame.blackUsername(), "create() does not give null black username");
         Assertions.assertEquals("game1", existingGame.gameName(), "create() gives incorrect gameName");
@@ -192,8 +192,8 @@ public class ServiceClassTests {
     @DisplayName("Success ClearService clear()")
     public void successClear() throws DataAccessException {
         clearService.clear();
-        Assertions.assertNull(userDao.getUser("username1"), "clear() did not clear UserData in database");
-        Assertions.assertNull(gameDao.getGame(existingGameID), "clear() did not clear GameData in database");
-        Assertions.assertNull(authDao.getAuth(existingAuth), "clear() did not clear AuthData in database");
+        Assertions.assertNull(userDAO.getUser("username1"), "clear() did not clear UserData in database");
+        Assertions.assertNull(gameDAO.getGame(existingGameID), "clear() did not clear GameData in database");
+        Assertions.assertNull(authDAO.getAuth(existingAuth), "clear() did not clear AuthData in database");
     }
 }
