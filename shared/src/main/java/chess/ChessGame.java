@@ -220,7 +220,11 @@ public class ChessGame {
         return false;
     }
 
-    private ChessPosition doesTestPieceCheckKing(TeamColor teamColor, ChessPiece testPiece, ChessPosition kingPosition, ChessPosition testPosition, Set<ChessPosition> testMovePositions) {
+    private ChessPosition doesTestPieceCheckKing(TeamColor teamColor,
+                                                 ChessPiece testPiece,
+                                                 ChessPosition kingPosition,
+                                                 ChessPosition testPosition,
+                                                 Set<ChessPosition> testMovePositions) {
         if (testPiece != null) {
             if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() == KING) {
                 kingPosition = testPosition;
@@ -275,7 +279,10 @@ public class ChessGame {
         return false;
     }
     
-    private Collection<ChessMove> isInStalemateHelper(ChessPiece testPiece, TeamColor teamColor, ChessPosition testPosition, Collection<ChessMove> kingMoves) {
+    private Collection<ChessMove> isInStalemateHelper(ChessPiece testPiece,
+                                                      TeamColor teamColor,
+                                                      ChessPosition testPosition,
+                                                      Collection<ChessMove> kingMoves) {
         if (testPiece != null) {
             if (testPiece.getTeamColor() == teamColor && testPiece.getPieceType() == KING) {
                 kingMoves = validMoves(testPosition);
@@ -379,7 +386,12 @@ public class ChessGame {
         return castle;
     }
 
-    private boolean isInCheckDuringCastle(TeamColor teamColor, boolean castle, ChessPosition kingPosition, ChessPiece king, ChessPosition movingKingPosition, ChessPosition finalKingPosition) {
+    private boolean isInCheckDuringCastle(TeamColor teamColor,
+                                          boolean castle,
+                                          ChessPosition kingPosition,
+                                          ChessPiece king,
+                                          ChessPosition movingKingPosition,
+                                          ChessPosition finalKingPosition) {
         if (!isInCheck(teamColor)) {
             currentBoard.addPiece(kingPosition, null);
             currentBoard.addPiece(movingKingPosition, king);
