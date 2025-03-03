@@ -25,15 +25,12 @@ public class ChessGame {
     public TeamColor getTeamTurn() {
         return currentTurn;
     }
-
     public void setTeamTurn(TeamColor team) {
         currentTurn = team;
     }
-
     public void setLastMove(ChessMove move) {
         lastMove = move;
     }
-
     public void setLastMovePiece(ChessPiece piece) {
         lastMovePiece = piece;
     }
@@ -50,27 +47,13 @@ public class ChessGame {
                 && Objects.equals(lastMovePiece, chessGame.lastMovePiece)
                 && Objects.equals(movePositionCollection, chessGame.movePositionCollection);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(currentTurn, currentBoard, lastMove, lastMovePiece, movePositionCollection);
     }
 
-    /**
-     * Enum identifying the 2 possible teams in a chess game
-     */
-    public enum TeamColor {
-        WHITE,
-        BLACK
-    }
+    public enum TeamColor {WHITE, BLACK}
 
-    /**
-     * Gets a collection of valid moves for a piece at the given location
-     *
-     * @param startPosition the piece to get valid moves for
-     * @return Set of valid moves for requested piece, or null if no piece at
-     * startPosition
-     */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = currentBoard.getPiece(startPosition);
         if (piece == null) {
@@ -125,12 +108,6 @@ public class ChessGame {
         }
     }
 
-    /**
-     * Makes a move in a chess game
-     *
-     * @param move chess move to preform
-     * @throws InvalidMoveException if move is invalid
-     */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
@@ -225,12 +202,6 @@ public class ChessGame {
         }
     }
 
-    /**
-     * Determines if the given team is in check
-     *
-     * @param teamColor which team to check for check
-     * @return True if the specified team is in check
-     */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = null;
         Set<ChessPosition> testMovePositions = new HashSet<>();
@@ -263,12 +234,6 @@ public class ChessGame {
         return kingPosition;
     }
 
-    /**
-     * Determines if the given team is in checkmate
-     *
-     * @param teamColor which team to check for checkmate
-     * @return True if the specified team is in checkmate
-     */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
             for (int i = 1; i <= 8; i++) {
@@ -293,13 +258,6 @@ public class ChessGame {
         return false;
     }
 
-    /**
-     * Determines if the given team is in stalemate, which here is defined as having
-     * no valid moves
-     *
-     * @param teamColor which team to check for stalemate
-     * @return True if the specified team is in stalemate, otherwise false
-     */
     public boolean isInStalemate(TeamColor teamColor) {
         if (teamColor == getTeamTurn()) {
             if (!isInCheck(teamColor)) {
@@ -508,23 +466,18 @@ public class ChessGame {
     public boolean whiteKingHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,5));
     }
-
     public boolean blackKingHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,5));
     }
-
     public boolean whiteKingSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,8));
     }
-
     public boolean whiteQueenSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,1));
     }
-
     public boolean blackKingSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,8));
     }
-
     public boolean blackQueenSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,1));
     }
