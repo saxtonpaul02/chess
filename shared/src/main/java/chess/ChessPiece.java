@@ -88,40 +88,7 @@ public class ChessPiece {
         }
 
         else if (piece == PieceType.KING) {
-            int row = myPosition.getRow();
-            int column = myPosition.getColumn();
-            row++;
-            if (row <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            column++;
-            if (row <= 8 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row--;
-            if (column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row--;
-            if (row >= 1 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            column--;
-            if (row >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            column--;
-            if (row >= 1 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row++;
-            if (column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row++;
-            if (row <= 8 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
+            getKingMoves(board, myPosition, moves);
         }
 
         else if (piece == PieceType.BISHOP) {
@@ -129,54 +96,96 @@ public class ChessPiece {
         }
 
         else if (piece == PieceType.KNIGHT) {
-            int row = myPosition.getRow();
-            int column = myPosition.getColumn();
-            row++;
-            row++;
-            column++;
-            if (row <= 8 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row--;
-            column++;
-            if (row <= 8 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row--;
-            row--;
-            if (row >= 1 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row--;
-            column--;
-            if (row >= 1 && column <= 8) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            column--;
-            column--;
-            if (row >= 1 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row++;
-            column--;
-            if (row >= 1 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row++;
-            row++;
-            if (row <= 8 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
-            row++;
-            column++;
-            if (row <= 8 && column >= 1) {
-                kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
-            }
+            getKnightMoves(board, myPosition, moves);
         }
+        
         else if (piece == PieceType.ROOK) {
             getHorizontalAndVerticalPieceMoves(board, myPosition, moves);
         }
         return moves;
+    }
+
+    private void getKnightMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        int row = myPosition.getRow();
+        int column = myPosition.getColumn();
+        row++;
+        row++;
+        column++;
+        if (row <= 8 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row--;
+        column++;
+        if (row <= 8 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row--;
+        row--;
+        if (row >= 1 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row--;
+        column--;
+        if (row >= 1 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        column--;
+        column--;
+        if (row >= 1 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row++;
+        column--;
+        if (row >= 1 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row++;
+        row++;
+        if (row <= 8 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row++;
+        column++;
+        if (row <= 8 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+    }
+
+    private void getKingMoves(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
+        int row = myPosition.getRow();
+        int column = myPosition.getColumn();
+        row++;
+        if (row <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        column++;
+        if (row <= 8 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row--;
+        if (column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row--;
+        if (row >= 1 && column <= 8) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        column--;
+        if (row >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        column--;
+        if (row >= 1 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row++;
+        if (column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
+        row++;
+        if (row <= 8 && column >= 1) {
+            kingAndKnightOccupiedSpace(board, myPosition, moves, row, column);
+        }
     }
 
     private void getBlackPawnMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves) {
@@ -245,7 +254,10 @@ public class ChessPiece {
         }
     }
 
-    private boolean positionEmptyOrOccupiedByOpponentProcedure(ChessBoard board, ChessPosition newPosition, ChessPosition myPosition, Collection<ChessMove> moves) {
+    private boolean positionEmptyOrOccupiedByOpponentProcedure(ChessBoard board, 
+                                                               ChessPosition newPosition, 
+                                                               ChessPosition myPosition, 
+                                                               Collection<ChessMove> moves) {
         if (board.getPiece(newPosition) != null) {
             if (board.getPiece(newPosition).getTeamColor() != pieceColor) {
                 ChessMove move = new ChessMove(myPosition,newPosition,null);

@@ -15,12 +15,12 @@ import java.util.Collection;
 public class ServiceClassTests {
 
     private static Server server;
-    private static final AuthDAO authDAO = new MemoryAuthDAO();
-    private static final GameDAO gameDAO = new MemoryGameDAO();
-    private static final UserDAO userDAO = new MemoryUserDAO();
-    private static final ClearService clearService = new ClearService(authDAO, gameDAO, userDAO);
-    private static final GameService gameService = new GameService(authDAO, gameDAO);
-    private static final UserService userService = new UserService(authDAO, userDAO);
+    private static final AuthDAO AUTH_DAO = new MemoryAuthDAO();
+    private static final GameDAO GAME_DAO = new MemoryGameDAO();
+    private static final UserDAO USER_DAO = new MemoryUserDAO();
+    private static final ClearService CLEAR_SERVICE = new ClearService(AUTH_DAO, GAME_DAO, USER_DAO);
+    private static final GameService GAME_SERVICE = new GameService(AUTH_DAO, GAME_DAO);
+    private static final UserService USER_SERVICE = new UserService(AUTH_DAO, USER_DAO);
     private static String existingAuth;
     private static int existingGameID;
 
@@ -42,7 +42,7 @@ public class ServiceClassTests {
     public void successRegister() throws DataAccessException {
         RegisterRequest registerRequest = new RegisterRequest("username1", "password1", "fake1@email.com");
         RegisterResult expectedResult = new RegisterResult("username1", "unknown");
-        RegisterResult actualResult = userService.register(registerRequest);
+        RegisterResult actualResult = USER_SERVICE.register(registerRequest);
         Assertions.assertNotNull(actualResult, "register() returned null");
         Assertions.assertNotNull(actualResult.authToken(), "register() returned a null authToken");
         Assertions.assertNotNull(actualResult.authToken(), "register() returned a null username");
@@ -56,7 +56,7 @@ public class ServiceClassTests {
     @DisplayName("Fail UserService register()")
     public void failRegister() throws DataAccessException {
         RegisterRequest registerRequest = new RegisterRequest("username1", "password1", "fake1@email.com");
-        RegisterResult actualResult = userService.register(registerRequest);
+        RegisterResult actualResult = USER_SERVICE.register(registerRequest);
         Assertions.assertNull(actualResult, "register() did not return null");
     }
 
@@ -64,16 +64,16 @@ public class ServiceClassTests {
     @Order(3)
     @DisplayName("Fail UserService logout()")
     public void failLogout() throws DataAccessException {
-        Assertions.assertFalse(userService.logout("notExistingAuthToken"), "logout() returned true");
+        Assertions.assertFalse(USER_SERVICE.logout("notExistingAuthToken"), "logout() returned true");
     }
 
     @Test
     @Order(4)
     @DisplayName("Success UserService logout()")
     public void successLogout() throws DataAccessException {
-        boolean logoutResult = userService.logout(existingAuth);
+        boolean logoutResult = USER_SERVICE.logout(existingAuth);
         Assertions.assertTrue(logoutResult, "logout() returned false");
-        Assertions.assertNull(authDAO.getAuth(existingAuth), "logout() did not delete authData from database");
+        Assertions.assertNull(AUTH_DAO.getAuth(existingAuth), "logout() did not delete authData from database");
     }
 
     @Test
@@ -81,11 +81,11 @@ public class ServiceClassTests {
     @DisplayName("Fail UserService login()")
     public void failLogin() throws DataAccessException {
         LoginRequest loginRequest1 = new LoginRequest("", "password1");
-        LoginResult loginResult1 = userService.login(loginRequest1);
+        LoginResult loginResult1 = USER_SERVICE.login(loginRequest1);
         Assertions.assertNull(loginResult1, "login() did not return null");
 
         LoginRequest loginRequest2 = new LoginRequest("username1", "incorrect");
-        LoginResult loginResult2 = userService.login(loginRequest2);
+        LoginResult loginResult2 = USER_SERVICE.login(loginRequest2);
         Assertions.assertNotNull(loginResult2, "login() returned null");
         Assertions.assertNull(loginResult2.authToken(), "login() did not return a null authToken");
     }
@@ -96,7 +96,7 @@ public class ServiceClassTests {
     public void successLogin() throws DataAccessException {
         LoginRequest loginRequest = new LoginRequest("username1", "password1");
         LoginResult expectedResult = new LoginResult("username1", "unknown");
-        LoginResult actualResult = userService.login(loginRequest);
+        LoginResult actualResult = USER_SERVICE.login(loginRequest);
         Assertions.assertNotNull(actualResult, "login() returned null");
         Assertions.assertNotNull(actualResult.authToken(), "login() returned a null authToken");
         Assertions.assertEquals(expectedResult.username(), actualResult.username(), "login() returned incorrect username");
@@ -108,7 +108,7 @@ public class ServiceClassTests {
     @DisplayName("Fail GameService create()")
     public void failCreate() throws DataAccessException {
         CreateRequest createRequest1 = new CreateRequest("notExistingAuthToken", "game1");
-        CreateResult createResult1 = gameService.create(createRequest1);
+        CreateResult createResult1 = GAME_SERVICE.create(createRequest1);
         Assertions.assertNull(createResult1, "create() did not return null");
     }
 
@@ -117,11 +117,11 @@ public class ServiceClassTests {
     @DisplayName("Success GameService create()")
     public void successCreate() throws DataAccessException {
         CreateRequest createRequest = new CreateRequest(existingAuth, "game1");
-        CreateResult actualResult = gameService.create(createRequest);
+        CreateResult actualResult = GAME_SERVICE.create(createRequest);
         Assertions.assertNotNull(actualResult, "create() returned null");
-        Assertions.assertNotNull(gameDAO.getGame(actualResult.gameID()), "GameID was not found in database");
+        Assertions.assertNotNull(GAME_DAO.getGame(actualResult.gameID()), "GameID was not found in database");
         existingGameID = actualResult.gameID();
-        GameData existingGame = gameDAO.getGame(existingGameID);
+        GameData existingGame = GAME_DAO.getGame(existingGameID);
         Assertions.assertNull(existingGame.whiteUsername(), "create() does not give null white username");
         Assertions.assertNull(existingGame.blackUsername(), "create() does not give null black username");
         Assertions.assertEquals("game1", existingGame.gameName(), "create() gives incorrect gameName");
@@ -133,7 +133,7 @@ public class ServiceClassTests {
     @DisplayName("Success GameService join()")
     public void successJoin() throws DataAccessException {
         JoinRequest joinRequest = new JoinRequest(existingAuth, ChessGame.TeamColor.WHITE, existingGameID);
-        int actualResult = gameService.join(joinRequest);
+        int actualResult = GAME_SERVICE.join(joinRequest);
         Assertions.assertNotEquals(0, actualResult, "join() returned 0 / did not find authToken in database");
         Assertions.assertNotEquals(3, actualResult, "join() returned 3 / did not find GameID in database");
         Assertions.assertNotEquals(2, actualResult, "join() returned 2 / team color to join is taken");
@@ -145,15 +145,15 @@ public class ServiceClassTests {
     @DisplayName("Fail GameService join()")
     public void failJoin() throws DataAccessException {
         JoinRequest joinRequest1 = new JoinRequest("notExistingAuthToken", ChessGame.TeamColor.WHITE, existingGameID);
-        int joinResult1 = gameService.join(joinRequest1);
+        int joinResult1 = GAME_SERVICE.join(joinRequest1);
         Assertions.assertEquals(0, joinResult1, "join() accepted invalid authToken");
 
         JoinRequest joinRequest2 = new JoinRequest(existingAuth, ChessGame.TeamColor.WHITE, 12345);
-        int joinResult2 = gameService.join(joinRequest2);
+        int joinResult2 = GAME_SERVICE.join(joinRequest2);
         Assertions.assertEquals(3, joinResult2, "join() accepted invalid gameID");
 
         JoinRequest joinRequest3 = new JoinRequest(existingAuth, ChessGame.TeamColor.WHITE, existingGameID);
-        int joinResult3 = gameService.join(joinRequest3);
+        int joinResult3 = GAME_SERVICE.join(joinRequest3);
         Assertions.assertEquals(2, joinResult3, "join() did not recognize request team color to join was taken");
     }
 
@@ -162,11 +162,11 @@ public class ServiceClassTests {
     @DisplayName("Success GameService list()")
     public void successList() throws DataAccessException {
         CreateRequest createGame2 = new CreateRequest(existingAuth, "game2");
-        CreateResult game2Result = gameService.create(createGame2);
+        CreateResult game2Result = GAME_SERVICE.create(createGame2);
         Collection<ListResult> expectedResult = new ArrayList<>();
         expectedResult.add(new ListResult(existingGameID, "username1", null, "game1"));
         expectedResult.add(new ListResult(game2Result.gameID(), null, null, "game2"));
-        Collection<ListResult> listResult = gameService.list(existingAuth);
+        Collection<ListResult> listResult = GAME_SERVICE.list(existingAuth);
         Assertions.assertNotNull(listResult, "list() returned null");
         Assertions.assertTrue(expectedResult.containsAll(listResult)
                 && listResult.containsAll(expectedResult), "list() returned an incorrect Collection");
@@ -176,7 +176,7 @@ public class ServiceClassTests {
     @Order(12)
     @DisplayName("Fail GameService list()")
     public void failList() throws DataAccessException {
-        Collection<ListResult> listResult1 = gameService.list("notExistingAuthToken");
+        Collection<ListResult> listResult1 = GAME_SERVICE.list("notExistingAuthToken");
         Assertions.assertNull(listResult1, "list() did not return null");
     }
 
@@ -191,9 +191,9 @@ public class ServiceClassTests {
     @Order(14)
     @DisplayName("Success ClearService clear()")
     public void successClear() throws DataAccessException {
-        clearService.clear();
-        Assertions.assertNull(userDAO.getUser("username1"), "clear() did not clear UserData in database");
-        Assertions.assertNull(gameDAO.getGame(existingGameID), "clear() did not clear GameData in database");
-        Assertions.assertNull(authDAO.getAuth(existingAuth), "clear() did not clear AuthData in database");
+        CLEAR_SERVICE.clear();
+        Assertions.assertNull(USER_DAO.getUser("username1"), "clear() did not clear UserData in database");
+        Assertions.assertNull(GAME_DAO.getGame(existingGameID), "clear() did not clear GameData in database");
+        Assertions.assertNull(AUTH_DAO.getAuth(existingAuth), "clear() did not clear AuthData in database");
     }
 }

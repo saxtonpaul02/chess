@@ -40,26 +40,12 @@ public class ChessGame {
     }
 
     /**
-     * @return The most recent move made in the game
-     */
-    public ChessMove getLastMove() {
-        return lastMove;
-    }
-
-    /**
      * Set's the most recent move made in the game
      *
       * @param move the most recent move made in the game
      */
     public void setLastMove(ChessMove move) {
         lastMove = move;
-    }
-
-    /**
-     * @return The piece that made the most recent move
-     */
-    public ChessPiece getLastMovePiece() {
-        return lastMovePiece;
     }
 
     /**
@@ -77,7 +63,11 @@ public class ChessGame {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return currentTurn == chessGame.currentTurn && Objects.equals(currentBoard, chessGame.currentBoard) && Objects.equals(lastMove, chessGame.lastMove) && Objects.equals(lastMovePiece, chessGame.lastMovePiece) && Objects.equals(movePositionCollection, chessGame.movePositionCollection);
+        return currentTurn == chessGame.currentTurn
+                && Objects.equals(currentBoard, chessGame.currentBoard)
+                && Objects.equals(lastMove, chessGame.lastMove)
+                && Objects.equals(lastMovePiece, chessGame.lastMovePiece)
+                && Objects.equals(movePositionCollection, chessGame.movePositionCollection);
     }
 
     @Override
@@ -107,7 +97,7 @@ public class ChessGame {
         } else {
             TeamColor pieceColor = piece.getTeamColor();
             Collection<ChessMove> moves = piece.pieceMoves(currentBoard, startPosition);
-            if (isEnPassant(startPosition)) {
+            if (isEnPassantValid(startPosition)) {
                 ChessPosition endPosition;
                 if (piece.getTeamColor() == TeamColor.WHITE) {
                     endPosition = new ChessPosition(6, lastMove.getEndPosition().getColumn());
@@ -130,7 +120,7 @@ public class ChessGame {
             currentBoard.addPiece(startPosition, piece);
             if (piece.getPieceType() == KING) {
                 System.out.println("Piece is King");
-                if (isShortCastle()) {
+                if (isShortCastleValid()) {
                     ChessPosition endPosition;
                     if (piece.getTeamColor() == TeamColor.WHITE) {
                         endPosition = new ChessPosition(1, 7);
@@ -140,7 +130,7 @@ public class ChessGame {
                     ChessMove newMove = new ChessMove(startPosition, endPosition, null);
                     valid.add(newMove);
                 }
-                if (isLongCastle()) {
+                if (isLongCastleValid()) {
                     ChessPosition endPosition;
                     if (piece.getTeamColor() == TeamColor.WHITE) {
                         endPosition = new ChessPosition(1, 3);
@@ -150,13 +140,6 @@ public class ChessGame {
                     ChessMove newMove = new ChessMove(startPosition, endPosition, null);
                     valid.add(newMove);
                 }
-            }
-            System.out.println(movePositionCollection);
-            System.out.println(valid);
-            if (currentTurn == TeamColor.WHITE) {
-                System.out.println("White");
-            } else {
-                System.out.println("Black");
             }
             return valid;
         }
@@ -173,58 +156,10 @@ public class ChessGame {
         ChessPosition endPosition = move.getEndPosition();
         ChessPiece piece = currentBoard.getPiece(startPosition);
         Collection<ChessMove> moves = validMoves(startPosition);
-        if (moves == null) {
-            throw new InvalidMoveException();
-        } else if (!moves.contains(move)) {
-            throw new InvalidMoveException();
-        } else if (piece.getTeamColor() != currentTurn) {
+        if (moves == null || !moves.contains(move) || piece.getTeamColor() != currentTurn) {
             throw new InvalidMoveException();
         } else if (piece.getPieceType() == KING) {
-            if (currentTurn == TeamColor.WHITE) {
-                if (startPosition.equals(new ChessPosition(1,5))) {
-                    if (endPosition.equals(new ChessPosition(1,7))) {
-                        ChessPiece rook = currentBoard.getPiece(new ChessPosition(1, 8));
-                        currentBoard.addPiece(new ChessPosition(1, 8), null);
-                        currentBoard.addPiece(new ChessPosition(1, 7), piece);
-                        currentBoard.addPiece(new ChessPosition(1, 6), rook);
-                        currentBoard.addPiece(new ChessPosition(1, 5), null);
-                    } else if (endPosition.equals(new ChessPosition(1,3))) {
-                        ChessPiece rook = currentBoard.getPiece(new ChessPosition(1,1));
-                        currentBoard.addPiece(new ChessPosition(1, 1), null);
-                        currentBoard.addPiece(new ChessPosition(1, 3), piece);
-                        currentBoard.addPiece(new ChessPosition(1, 4), rook);
-                        currentBoard.addPiece(new ChessPosition(1, 5), null);
-                    } else {
-                        currentBoard.addPiece(startPosition,null);
-                        currentBoard.addPiece(endPosition, piece);
-                    }
-                } else {
-                    currentBoard.addPiece(startPosition,null);
-                    currentBoard.addPiece(endPosition, piece);
-                }
-            } else {
-                if (startPosition.equals(new ChessPosition(8,5))) {
-                    if (endPosition.equals(new ChessPosition(8, 7))) {
-                        ChessPiece rook = currentBoard.getPiece(new ChessPosition(8, 8));
-                        currentBoard.addPiece(new ChessPosition(8, 8), null);
-                        currentBoard.addPiece(new ChessPosition(8, 7), piece);
-                        currentBoard.addPiece(new ChessPosition(8, 6), rook);
-                        currentBoard.addPiece(new ChessPosition(8, 5), null);
-                    } else if (endPosition.equals(new ChessPosition(8, 3))) {
-                        ChessPiece rook = currentBoard.getPiece(new ChessPosition(8, 1));
-                        currentBoard.addPiece(new ChessPosition(8, 1), null);
-                        currentBoard.addPiece(new ChessPosition(8, 3), piece);
-                        currentBoard.addPiece(new ChessPosition(8, 4), rook);
-                        currentBoard.addPiece(new ChessPosition(8, 5), null);
-                    } else {
-                        currentBoard.addPiece(startPosition,null);
-                        currentBoard.addPiece(endPosition, piece);
-                    }
-                } else {
-                    currentBoard.addPiece(startPosition,null);
-                    currentBoard.addPiece(endPosition, piece);
-                }
-            }
+            makeKingMove(startPosition, endPosition, piece);
         } else {
             ChessPiece newPiece;
             if (move.getPromotionPiece() == null) {
@@ -233,17 +168,7 @@ public class ChessGame {
                 newPiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
             }
             if (piece.getPieceType() == PAWN) {
-                if (isEnPassant(startPosition)) {
-                    if (piece.getTeamColor() == TeamColor.WHITE) {
-                        if (endPosition.getRow() == 6 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
-                            currentBoard.addPiece(lastMove.getEndPosition(), null);
-                        }
-                    } else {
-                        if (endPosition.getRow() == 3 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
-                            currentBoard.addPiece(lastMove.getEndPosition(), null);
-                        }
-                    }
-                }
+                makePawnMove(startPosition, piece, endPosition);
             }
             currentBoard.addPiece(startPosition, null);
             currentBoard.addPiece(endPosition, newPiece);
@@ -256,6 +181,68 @@ public class ChessGame {
         setLastMove(move);
         setLastMovePiece(piece);
         movePositionCollection.add(startPosition);
+    }
+
+    private void makePawnMove(ChessPosition startPosition, ChessPiece piece, ChessPosition endPosition) {
+        if (isEnPassantValid(startPosition)) {
+            if (piece.getTeamColor() == TeamColor.WHITE) {
+                if (endPosition.getRow() == 6 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
+                    currentBoard.addPiece(lastMove.getEndPosition(), null);
+                }
+            } else {
+                if (endPosition.getRow() == 3 && endPosition.getColumn() == lastMove.getEndPosition().getColumn()) {
+                    currentBoard.addPiece(lastMove.getEndPosition(), null);
+                }
+            }
+        }
+    }
+
+    private void makeKingMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece piece) {
+        if (currentTurn == TeamColor.WHITE) {
+            if (startPosition.equals(new ChessPosition(1,5))) {
+                if (endPosition.equals(new ChessPosition(1,7))) {
+                    ChessPiece rook = currentBoard.getPiece(new ChessPosition(1, 8));
+                    currentBoard.addPiece(new ChessPosition(1, 8), null);
+                    currentBoard.addPiece(new ChessPosition(1, 7), piece);
+                    currentBoard.addPiece(new ChessPosition(1, 6), rook);
+                    currentBoard.addPiece(new ChessPosition(1, 5), null);
+                } else if (endPosition.equals(new ChessPosition(1,3))) {
+                    ChessPiece rook = currentBoard.getPiece(new ChessPosition(1,1));
+                    currentBoard.addPiece(new ChessPosition(1, 1), null);
+                    currentBoard.addPiece(new ChessPosition(1, 3), piece);
+                    currentBoard.addPiece(new ChessPosition(1, 4), rook);
+                    currentBoard.addPiece(new ChessPosition(1, 5), null);
+                } else {
+                    currentBoard.addPiece(startPosition,null);
+                    currentBoard.addPiece(endPosition, piece);
+                }
+            } else {
+                currentBoard.addPiece(startPosition,null);
+                currentBoard.addPiece(endPosition, piece);
+            }
+        } else {
+            if (startPosition.equals(new ChessPosition(8,5))) {
+                if (endPosition.equals(new ChessPosition(8, 7))) {
+                    ChessPiece rook = currentBoard.getPiece(new ChessPosition(8, 8));
+                    currentBoard.addPiece(new ChessPosition(8, 8), null);
+                    currentBoard.addPiece(new ChessPosition(8, 7), piece);
+                    currentBoard.addPiece(new ChessPosition(8, 6), rook);
+                    currentBoard.addPiece(new ChessPosition(8, 5), null);
+                } else if (endPosition.equals(new ChessPosition(8, 3))) {
+                    ChessPiece rook = currentBoard.getPiece(new ChessPosition(8, 1));
+                    currentBoard.addPiece(new ChessPosition(8, 1), null);
+                    currentBoard.addPiece(new ChessPosition(8, 3), piece);
+                    currentBoard.addPiece(new ChessPosition(8, 4), rook);
+                    currentBoard.addPiece(new ChessPosition(8, 5), null);
+                } else {
+                    currentBoard.addPiece(startPosition,null);
+                    currentBoard.addPiece(endPosition, piece);
+                }
+            } else {
+                currentBoard.addPiece(startPosition,null);
+                currentBoard.addPiece(endPosition, piece);
+            }
+        }
     }
 
     /**
@@ -367,13 +354,7 @@ public class ChessGame {
         return currentBoard;
     }
 
-    /**
-     * Determines if en passant can be played on current move by piece at given starting position
-     *
-     * @param startPosition the starting position of the piece in question
-     * @return True if en passant can be played on current move, otherwise false
-     */
-    public boolean isEnPassant(ChessPosition startPosition) {
+    public boolean isEnPassantValid(ChessPosition startPosition) {
         if (lastMovePiece.getPieceType() == PAWN) {
             ChessPiece piece = currentBoard.getPiece(startPosition);
             if (piece.getPieceType() == PAWN && piece.getTeamColor() == TeamColor.WHITE) {
@@ -393,12 +374,7 @@ public class ChessGame {
         return false;
     }
 
-    /**
-     * Determines if the king-side (short) castle is possible
-     *
-     * @return True if the king-side (short) castle is possible, otherwise false
-     */
-    public boolean isShortCastle() {
+    public boolean isShortCastleValid() {
         boolean castle = false;
         ChessPosition whiteKingPosition = new ChessPosition(1,5);
         ChessPiece whiteKing = currentBoard.getPiece(whiteKingPosition);
@@ -471,12 +447,7 @@ public class ChessGame {
         return castle;
     }
 
-    /**
-     * Determines if the queen-side (long) castle is possible
-     *
-     * @return True if the queen-side (long) castle is possible, otherwise false
-     */
-    public boolean isLongCastle() {
+    public boolean isLongCastleValid() {
         boolean castle = false;
         ChessPosition whiteKingPosition = new ChessPosition(1,5);
         ChessPiece whiteKing = currentBoard.getPiece(whiteKingPosition);
@@ -553,58 +524,27 @@ public class ChessGame {
         return castle;
     }
 
-    /**
-     * Determines if the White King has made a move yet in the game
-     *
-     * @return True if the White King has not moved yet, otherwise false
-     */
     public boolean whiteKingHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,5));
     }
 
-    /**
-     * Determines if the Black King has made a move yet in the game
-     *
-     * @return True if the Black King has not moved yet, otherwise false
-     */
     public boolean blackKingHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,5));
     }
 
-    /**
-     * Determines if the White king-side Rook has made a move yet in the game
-     *
-     * @return True if the White king-side Rook has not moved yet, otherwise false
-     */
     public boolean whiteKingSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,8));
     }
 
-    /**
-     * Determines if the White queen-side Rook has made a move yet in the game
-     *
-     * @return True if the White queen-side Rook has not moved yet, otherwise false
-     */
     public boolean whiteQueenSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(1,1));
     }
 
-    /**
-     * Determines if the Black king-side Rook has made a move yet in the game
-     *
-     * @return True if the Black king-side Rook has not moved yet, otherwise false
-     */
     public boolean blackKingSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,8));
     }
 
-    /**
-     * Determines if the Black queen-side Rook has made a move yet in the game
-     *
-     * @return True if the Black queen-side Rook has not moved yet, otherwise false
-     */
     public boolean blackQueenSideRookHasNotMoved() {
         return !movePositionCollection.contains(new ChessPosition(8,1));
     }
 }
-
