@@ -119,7 +119,6 @@ public class ChessGame {
             }
             currentBoard.addPiece(startPosition, piece);
             if (piece.getPieceType() == KING) {
-                System.out.println("Piece is King");
                 if (isShortCastleValid()) {
                     ChessPosition endPosition;
                     if (piece.getTeamColor() == TeamColor.WHITE) {
