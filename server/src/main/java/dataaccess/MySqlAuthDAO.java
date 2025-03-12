@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class MySqlAuthDAO implements AuthDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
+    public MySqlAuthDAO() {
         configureDatabase();
     }
 
@@ -20,10 +20,10 @@ public class MySqlAuthDAO implements AuthDAO {
     public void deleteAuth(AuthData authData) {
     }
 
-    public void clearAuth() throws DataAccessException {
+    public void clearAuth() {
     }
 
-    private void configureDatabase() throws DataAccessException {
+    private void configureDatabase() {
 
     }
 }

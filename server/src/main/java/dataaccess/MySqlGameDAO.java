@@ -8,7 +8,7 @@ import java.util.Collection;
 
 public class MySqlGameDAO implements GameDAO {
 
-    public MySqlGameDAO() throws DataAccessException {
+    public MySqlGameDAO() {
         configureDatabase();
     }
 
@@ -30,7 +30,7 @@ public class MySqlGameDAO implements GameDAO {
     public void clearGame() {
     }
 
-    private void configureDatabase() throws DataAccessException {
+    private void configureDatabase() {
 
     }
 }

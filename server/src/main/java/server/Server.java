@@ -3,7 +3,6 @@ package server;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.*;
 import exception.ErrorException;
-import org.eclipse.jetty.server.Authentication;
 import service.*;
 import spark.*;
 import com.google.gson.Gson;
@@ -13,9 +12,9 @@ import java.util.Map;
 
 public class Server {
 
-    private final AuthDAO authDao = new MemoryAuthDAO();
-    private final GameDAO gameDao = new MemoryGameDAO();
-    private final UserDAO userDao = new MemoryUserDAO();
+    private final AuthDAO authDao = new MySqlAuthDAO();
+    private final GameDAO gameDao = new MySqlGameDAO();
+    private final UserDAO userDao = new MySqlUserDAO();
     private final ClearService clearService = new ClearService(authDao, gameDao, userDao);
     private final GameService gameService = new GameService(authDao, gameDao);
     private final UserService userService = new UserService(authDao, userDao);

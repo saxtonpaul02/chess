@@ -8,7 +8,7 @@ import request.RegisterRequest;
 
 public class MySqlUserDAO implements UserDAO {
 
-    public MySqlUserDAO() throws DataAccessException {
+    public MySqlUserDAO() {
         configureDatabase();
     }
 
@@ -23,7 +23,7 @@ public class MySqlUserDAO implements UserDAO {
     public void clearUser() {
     }
 
-    private void configureDatabase() throws DataAccessException {
+    private void configureDatabase() {
 
     }
 }
