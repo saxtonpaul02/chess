@@ -34,9 +34,15 @@ public class Server {
         Spark.put("/game", this::join);
         Spark.get("/game", this::list);
         Spark.delete("/db", this::clear);
+        Spark.exception(DataAccessException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
         return Spark.port();
+    }
+
+    private void exceptionHandler(DataAccessException ex, Request req, Response res) {
+        res.status(404);
+        res.body(ex.getMessage());
     }
 
     public void stop() {
