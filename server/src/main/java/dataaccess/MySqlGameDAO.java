@@ -130,7 +130,7 @@ public class MySqlGameDAO implements GameDAO {
               PRIMARY KEY ('gameID'),
               INDEX (whiteUsername),
               INDEX (blackUsername),
-              INDEX (gameName),
+              INDEX (gameName)
             );
             """
     };
