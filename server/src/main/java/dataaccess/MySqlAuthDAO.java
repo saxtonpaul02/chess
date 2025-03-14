@@ -7,8 +7,12 @@ import java.util.UUID;
 
 public class MySqlAuthDAO implements AuthDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlAuthDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public AuthData createAuth(String username) throws DataAccessException {

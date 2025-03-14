@@ -23,9 +23,7 @@ public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-
         Spark.staticFiles.location("web");
-
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
@@ -33,15 +31,8 @@ public class Server {
         Spark.put("/game", this::join);
         Spark.get("/game", this::list);
         Spark.delete("/db", this::clear);
-        Spark.exception(DataAccessException.class, this::exceptionHandler);
-
         Spark.awaitInitialization();
         return Spark.port();
-    }
-
-    private void exceptionHandler(DataAccessException ex, Request req, Response res) {
-        res.status(404);
-        res.body(ex.getMessage());
     }
 
     public void stop() {
@@ -49,7 +40,7 @@ public class Server {
         Spark.awaitStop();
     }
 
-    private Object register(Request req, Response res) throws DataAccessException {
+    private Object register(Request req, Response res) {
         try {
             RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
             if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
@@ -75,35 +66,48 @@ public class Server {
         } catch (JsonSyntaxException e) {
             res.status(400);
             return new Gson().toJson(new ErrorException("Error: bad request"));
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object login(Request req, Response res) throws DataAccessException {
-        LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
-        LoginResult loginResult = userService.login(loginRequest);
-        if (loginResult == null) {
-            res.status(401);
-            return new Gson().toJson(new ErrorException("Error: unauthorized"));
-        } else if (loginResult.authToken() == null) {
-            res.status(401);
-            return new Gson().toJson(new ErrorException("Error: unauthorized"));
-        } else {
-            return new Gson().toJson(loginResult);
+    private Object login(Request req, Response res) {
+        try {
+            LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
+            LoginResult loginResult = userService.login(loginRequest);
+            if (loginResult == null) {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            } else if (loginResult.authToken() == null) {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            } else {
+                return new Gson().toJson(loginResult);
+            }
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object logout(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers("Authorization");
-        if (userService.logout(authToken)) {
-            res.status(200);
-            return "{}";
-        } else {
-            res.status(401);
-            return new Gson().toJson(new ErrorException("Error: unauthorized"));
+    private Object logout(Request req, Response res) {
+        try {
+            String authToken = req.headers("Authorization");
+            if (userService.logout(authToken)) {
+                res.status(200);
+                return "{}";
+            } else {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            }
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object create(Request req, Response res) throws DataAccessException {
+    private Object create(Request req, Response res) {
         try {
             String authToken = req.headers("Authorization");
             CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
@@ -122,10 +126,13 @@ public class Server {
         } catch (JsonSyntaxException e) {
             res.status(400);
             return new Gson().toJson(new ErrorException("Error: bad request"));
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object join(Request req, Response res) throws DataAccessException {
+    private Object join(Request req, Response res) {
         try {
             String authToken = req.headers("Authorization");
             JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
@@ -150,23 +157,36 @@ public class Server {
         } catch (JsonSyntaxException e) {
             res.status(400);
             return new Gson().toJson(new ErrorException("Error: bad request"));
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object list(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers("Authorization");
-        var listResult = gameService.list(authToken);
-        if (listResult == null) {
-            res.status(401);
-            return new Gson().toJson(new ErrorException("Error: unauthorized"));
-        } else {
-            return new Gson().toJson(Map.of("games", listResult));
+    private Object list(Request req, Response res) {
+        try {
+            String authToken = req.headers("Authorization");
+            var listResult = gameService.list(authToken);
+            if (listResult == null) {
+                res.status(401);
+                return new Gson().toJson(new ErrorException("Error: unauthorized"));
+            } else {
+                return new Gson().toJson(Map.of("games", listResult));
+            }
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
         }
     }
 
-    private Object clear(Request req, Response res) throws DataAccessException {
-        clearService.clear();
-        res.status(200);
-        return "{}";
+    private Object clear(Request req, Response res) {
+        try {
+            clearService.clear();
+            res.status(200);
+            return "{}";
+        } catch (DataAccessException e) {
+            res.status(500);
+            return new Gson().toJson(e.getMessage());
+        }
     }
 }

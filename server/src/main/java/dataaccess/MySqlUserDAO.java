@@ -8,8 +8,12 @@ import java.sql.SQLException;
 
 public class MySqlUserDAO implements UserDAO {
 
-    public MySqlUserDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlUserDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public UserData createUser(RegisterRequest registerRequest) throws DataAccessException {
