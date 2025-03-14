@@ -14,7 +14,7 @@ import static java.sql.Types.NULL;
 
 public class MySqlGameDAO implements GameDAO {
 
-    public MySqlGameDAO() {
+    public MySqlGameDAO() throws DataAccessException {
         configureDatabase();
     }
 
