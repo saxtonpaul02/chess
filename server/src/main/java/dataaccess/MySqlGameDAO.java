@@ -57,7 +57,7 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public Collection<ListResult> listGames() throws DataAccessException {
-        Collection<ListResult> result = new ArrayList<ListResult>;
+        Collection<ListResult> result = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gamedata";
             try (var ps = conn.prepareStatement(statement)) {
