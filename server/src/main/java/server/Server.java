@@ -8,6 +8,8 @@ import spark.*;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
+
+import javax.xml.crypto.Data;
 import java.util.Map;
 
 public class Server {
@@ -68,7 +70,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -87,7 +89,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -103,7 +105,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -128,7 +130,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -159,7 +161,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -175,7 +177,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 
@@ -186,7 +188,7 @@ public class Server {
             return "{}";
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e.getMessage());
+            return new Gson().toJson(e);
         }
     }
 }
