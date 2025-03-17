@@ -10,7 +10,19 @@ public class MySqlUserDAO implements UserDAO {
 
     public MySqlUserDAO() {
         try {
-            configureDatabase();
+            String[] statements = {
+                    """
+            CREATE TABLE IF NOT EXISTS userdata (
+              `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL,
+              PRIMARY KEY (`username`),
+              INDEX (password),
+              INDEX (email)
+            )
+            """
+            };
+            ConfigureDatabase.run(statements);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -22,7 +34,7 @@ public class MySqlUserDAO implements UserDAO {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         String email = registerRequest.email();
         var statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, username, hashedPassword, email);
+        ConfigureDatabase.executeUpdate(statement, username, hashedPassword, email);
         return new UserData(username, password, email);
     }
 
@@ -45,7 +57,7 @@ public class MySqlUserDAO implements UserDAO {
 
     public void clearUser() throws DataAccessException {
         var statement = "TRUNCATE userdata";
-        executeUpdate(statement);
+        ConfigureDatabase.executeUpdate(statement);
     }
 
     private UserData readUser(ResultSet rs) throws SQLException {
@@ -53,45 +65,5 @@ public class MySqlUserDAO implements UserDAO {
         String hashedPassword = rs.getString("password");
         String email = rs.getString("email");
         return new UserData(username, hashedPassword, email);
-    }
-
-    private void executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to access database: %s", ex.getMessage()));
-        }
-    }
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS userdata (
-              'username' varchar(256) NOT NULL,
-              'password' varchar(256) NOT NULL,
-              'email' varchar(256) NOT NULL,
-              PRIMARY KEY ('username'),
-              INDEX (password),
-              INDEX (email)
-            );
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
     }
 }

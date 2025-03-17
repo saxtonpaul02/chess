@@ -16,7 +16,22 @@ public class MySqlGameDAO implements GameDAO {
 
     public MySqlGameDAO() {
         try {
-            configureDatabase();
+            String[] statements = {
+                    """
+            CREATE TABLE IF NOT EXISTS gamedata (
+              `gameID` int NOT NULL AUTO_INCREMENT,
+              `whiteUsername` varchar(256) DEFAULT NULL,
+              `blackUsername` varchar(256) DEFAULT NULL,
+              `gameName` varchar(256) NOT NULL,
+              `game` TEXT NOT NULL,
+              PRIMARY KEY (`gameID`),
+              INDEX (whiteUsername),
+              INDEX (blackUsername),
+              INDEX (gameName)
+            )
+            """
+            };
+            ConfigureDatabase.run(statements);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -120,35 +135,6 @@ public class MySqlGameDAO implements GameDAO {
             }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to access database: %s", ex.getMessage()));
-        }
-    }
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS gamedata (
-              'gameID' int NOT NULL AUTO_INCREMENT,
-              'whiteUsername' varchar(256) DEFAULT NULL,
-              'blackUsername' varchar(256) DEFAULT NULL,
-              'gameName' varchar(256) NOT NULL,
-              'game' TEXT NOT NULL,
-              PRIMARY KEY ('gameID'),
-              INDEX (whiteUsername),
-              INDEX (blackUsername),
-              INDEX (gameName)
-            );
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 }

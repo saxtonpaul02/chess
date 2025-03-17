@@ -1,15 +1,23 @@
 package dataaccess;
 
 import model.AuthData;
-
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class MySqlAuthDAO implements AuthDAO {
 
     public MySqlAuthDAO() {
         try {
-            configureDatabase();
+            String[] statements = {
+                    """
+            CREATE TABLE IF NOT EXISTS authdata (
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`username`),
+              INDEX (authToken)
+            )
+            """
+            };
+            ConfigureDatabase.run(statements);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -18,7 +26,7 @@ public class MySqlAuthDAO implements AuthDAO {
     public AuthData createAuth(String username) throws DataAccessException {
         String authToken = UUID.randomUUID().toString();
         var statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?, ?)";
-        executeUpdate(statement, authToken, username);
+        ConfigureDatabase.executeUpdate(statement, authToken, username);
         return new AuthData(authToken, username);
         }
 
@@ -43,49 +51,11 @@ public class MySqlAuthDAO implements AuthDAO {
     public void deleteAuth(AuthData authData) throws DataAccessException {
         String username = authData.username();
         var statement = "DELETE FROM authdata WHERE username=?";
-        executeUpdate(statement, username);
+        ConfigureDatabase.executeUpdate(statement, username);
     }
 
     public void clearAuth() throws DataAccessException {
         var statement = "TRUNCATE authdata";
-        executeUpdate(statement);
-    }
-
-    private void executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to access database: %s", ex.getMessage()));
-        }
-    }
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS authdata (
-              'authToken' varchar(256) NOT NULL,
-              'username' varchar(256) NOT NULL,
-              PRIMARY KEY ('username'),
-              INDEX (authToken)
-            );
-            """
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        ConfigureDatabase.executeUpdate(statement);
     }
 }
