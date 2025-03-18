@@ -1,7 +1,6 @@
-package mysqldaos;
+package dataaccess;
 
 import chess.ChessGame;
-import dataaccess.*;
 import model.*;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
