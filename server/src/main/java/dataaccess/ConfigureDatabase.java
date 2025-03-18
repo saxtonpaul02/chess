@@ -24,7 +24,9 @@ public class ConfigureDatabase {
             try (var ps = conn.prepareStatement(statement)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
+                    if (param instanceof String p) {
+                        ps.setString(i + 1, p);
+                    }
                 }
                 ps.executeUpdate();
             }
