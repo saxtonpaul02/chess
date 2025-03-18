@@ -32,8 +32,8 @@ public class UserService {
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserData userData = userDao.getUser(loginRequest.username());
         if (userData != null) {
-            AuthData authData = authDao.createAuth(userData.username());
             if (verifyPassword(userData.password(), loginRequest.password())) {
+                AuthData authData = authDao.createAuth(userData.username());
                 return new LoginResult(userData.username(), authData.authToken());
             } else {
                 return new LoginResult(userData.username(), null);

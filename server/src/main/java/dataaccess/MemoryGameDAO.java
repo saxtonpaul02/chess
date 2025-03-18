@@ -29,7 +29,7 @@ public class MemoryGameDAO implements GameDAO {
         return null;
     }
 
-    public void updateGame(GameData gameData, AuthData authData, ChessGame.TeamColor playerColor) {
+    public int updateGame(GameData gameData, AuthData authData, ChessGame.TeamColor playerColor) {
         GameData newGameData;
         if (playerColor == ChessGame.TeamColor.WHITE) {
             newGameData = gameData.setWhiteUsername(authData.username());
@@ -38,6 +38,7 @@ public class MemoryGameDAO implements GameDAO {
         }
         gameDataSet.remove(gameData);
         gameDataSet.add(newGameData);
+        return 0;
     }
 
     public Collection<ListResult> listGames() {

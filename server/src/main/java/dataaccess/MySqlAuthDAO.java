@@ -10,7 +10,7 @@ public class MySqlAuthDAO implements AuthDAO {
         try {
             String[] statements = {
                     """
-            CREATE TABLE IF NOT EXISTS authdata (
+            CREATE TABLE IF NOT EXISTS authData (
               `authToken` varchar(256) NOT NULL,
               `username` varchar(256) NOT NULL,
               PRIMARY KEY (`authToken`),
@@ -26,14 +26,14 @@ public class MySqlAuthDAO implements AuthDAO {
 
     public AuthData createAuth(String username) throws DataAccessException {
         String authToken = UUID.randomUUID().toString();
-        var statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?)";
+        var statement = "INSERT INTO authData (authToken, username) VALUES (?, ?)";
         ConfigureDatabase.executeUpdate(statement, authToken, username);
         return new AuthData(authToken, username);
         }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT * FROM authdata WHERE authToken=?";
+            var statement = "SELECT * FROM authData WHERE authToken=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
@@ -51,12 +51,12 @@ public class MySqlAuthDAO implements AuthDAO {
 
     public void deleteAuth(AuthData authData) throws DataAccessException {
         String authToken = authData.authToken();
-        var statement = "DELETE FROM authdata WHERE authToken=?";
+        var statement = "DELETE FROM authData WHERE authToken=?";
         ConfigureDatabase.executeUpdate(statement, authToken);
     }
 
     public void clearAuth() throws DataAccessException {
-        var statement = "TRUNCATE authdata";
+        var statement = "TRUNCATE authData";
         ConfigureDatabase.executeUpdate(statement);
     }
 }

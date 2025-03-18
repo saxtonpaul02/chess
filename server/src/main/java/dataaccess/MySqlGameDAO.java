@@ -18,7 +18,7 @@ public class MySqlGameDAO implements GameDAO {
         try {
             String[] statements = {
                     """
-            CREATE TABLE IF NOT EXISTS gamedata (
+            CREATE TABLE IF NOT EXISTS gameData (
               `gameID` int NOT NULL AUTO_INCREMENT,
               `whiteUsername` varchar(256) DEFAULT NULL,
               `blackUsername` varchar(256) DEFAULT NULL,
@@ -40,14 +40,14 @@ public class MySqlGameDAO implements GameDAO {
     public GameData create(String gameName) throws DataAccessException {
         ChessGame chessGame = new ChessGame();
         var jsonGame = new Gson().toJson(chessGame);
-        var statement = "INSERT INTO gamedata (gameName, game) VALUES (?, ?)";
+        var statement = "INSERT INTO gameData (gameName, game) VALUES (?, ?)";
         int gameID = executeUpdate(statement, gameName, jsonGame);
         return new GameData(gameID, null, null, gameName, chessGame);
     }
 
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT * FROM gamedata WHERE gameID=?";
+            var statement = "SELECT * FROM gameData WHERE gameID=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
@@ -62,23 +62,23 @@ public class MySqlGameDAO implements GameDAO {
         return null;
     }
 
-    public void updateGame(GameData gameData, AuthData authData,
+    public int updateGame(GameData gameData, AuthData authData,
                            ChessGame.TeamColor playerColor) throws DataAccessException {
         String username = authData.username();
         int id = gameData.gameID();
         String statement;
         if (playerColor == ChessGame.TeamColor.WHITE) {
-            statement = "UPDATE gamedata SET whiteUsername=? WHERE gameID=?";
+            statement = "UPDATE gameData SET whiteUsername=? WHERE gameID=?";
         } else {
-            statement = "UPDATE gamedata SET blackUsername=? WHERE gameID=?";
+            statement = "UPDATE gameData SET blackUsername=? WHERE gameID=?";
         }
-        executeUpdate(statement, username, id);
+        return executeUpdate(statement, username, id);
     }
 
     public Collection<ListResult> listGames() throws DataAccessException {
         Collection<ListResult> result = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT * FROM gamedata";
+            var statement = "SELECT * FROM gameData";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -93,7 +93,7 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public void clearGame() throws DataAccessException {
-        var statement = "TRUNCATE gamedata";
+        var statement = "TRUNCATE gameData";
         executeUpdate(statement);
     }
 
