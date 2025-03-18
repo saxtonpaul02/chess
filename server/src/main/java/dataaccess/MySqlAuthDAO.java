@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+
 import java.util.UUID;
 
 public class MySqlAuthDAO implements AuthDAO {
@@ -12,8 +13,8 @@ public class MySqlAuthDAO implements AuthDAO {
             CREATE TABLE IF NOT EXISTS authdata (
               `authToken` varchar(256) NOT NULL,
               `username` varchar(256) NOT NULL,
-              PRIMARY KEY (`username`),
-              INDEX (authToken)
+              PRIMARY KEY (`authToken`),
+              INDEX (username)
             )
             """
             };
@@ -27,17 +28,17 @@ public class MySqlAuthDAO implements AuthDAO {
         String authToken = UUID.randomUUID().toString();
         var statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?)";
         ConfigureDatabase.executeUpdate(statement, authToken, username);
-        return new AuthData(username, authToken);
+        return new AuthData(authToken, username);
         }
 
-    public AuthData getAuth(String username) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT * FROM authdata WHERE username=?";
+            var statement = "SELECT * FROM authdata WHERE authToken=?";
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, username);
+                ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        String authToken = rs.getString("authToken");
+                        String username = rs.getString("username");
                         return new AuthData(authToken, username);
                     }
                 }
@@ -49,9 +50,9 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     public void deleteAuth(AuthData authData) throws DataAccessException {
-        String username = authData.username();
-        var statement = "DELETE FROM authdata WHERE username=?";
-        ConfigureDatabase.executeUpdate(statement, username);
+        String authToken = authData.authToken();
+        var statement = "DELETE FROM authdata WHERE authToken=?";
+        ConfigureDatabase.executeUpdate(statement, authToken);
     }
 
     public void clearAuth() throws DataAccessException {

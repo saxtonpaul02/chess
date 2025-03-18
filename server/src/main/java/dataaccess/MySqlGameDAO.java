@@ -47,7 +47,7 @@ public class MySqlGameDAO implements GameDAO {
 
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT whiteUsername, blackUsername, gameName, game FROM gamedata WHERE gameID=?";
+            var statement = "SELECT * FROM gamedata WHERE gameID=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
@@ -78,7 +78,7 @@ public class MySqlGameDAO implements GameDAO {
     public Collection<ListResult> listGames() throws DataAccessException {
         Collection<ListResult> result = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM gamedata";
+            var statement = "SELECT * FROM gamedata";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
