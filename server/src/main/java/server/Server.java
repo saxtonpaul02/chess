@@ -70,7 +70,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -89,7 +89,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -105,7 +105,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -130,7 +130,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -161,7 +161,7 @@ public class Server {
             return new Gson().toJson(new ErrorException("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -177,7 +177,7 @@ public class Server {
             }
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 
@@ -188,7 +188,7 @@ public class Server {
             return "{}";
         } catch (DataAccessException e) {
             res.status(500);
-            return new Gson().toJson(e);
+            return new Gson().toJson(new ErrorException(e.getMessage()));
         }
     }
 }

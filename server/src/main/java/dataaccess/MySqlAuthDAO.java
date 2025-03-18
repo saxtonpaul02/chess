@@ -27,12 +27,12 @@ public class MySqlAuthDAO implements AuthDAO {
         String authToken = UUID.randomUUID().toString();
         var statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?)";
         ConfigureDatabase.executeUpdate(statement, authToken, username);
-        return new AuthData(authToken, username);
+        return new AuthData(username, authToken);
         }
 
     public AuthData getAuth(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, authToken FROM authdata WHERE username=?";
+            var statement = "SELECT * FROM authdata WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
