@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public class ChessClient {
     private String visitorName = null;
+    private String visitorAuthToken = null;
     private final ServerFacade server;
     public State state = State.LOGGED_OUT;
 
@@ -37,7 +38,7 @@ public class ChessClient {
 
     public String register(String... params) throws Exception {
         if (params.length == 3) {
-            server.register(params);
+            visitorAuthToken = server.register(params);
             state = State.LOGGED_IN;
             visitorName = params[0];
             return String.format("Logged in as %s.", visitorName);
@@ -47,7 +48,7 @@ public class ChessClient {
 
     public String login(String... params) throws Exception {
         if (params.length == 2) {
-            server.login(params);
+            visitorAuthToken = server.login(params);
             state = State.LOGGED_IN;
             visitorName = params[0];
             return String.format("Logged in as %s.", visitorName);
@@ -58,7 +59,7 @@ public class ChessClient {
     public String createGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            server.createGame(params);
+            server.createGame(visitorAuthToken, params);
             return String.format("Successfully created game %s.", params[0]);
         }
         throw new Exception("Error creating game, please try again.");
@@ -67,7 +68,7 @@ public class ChessClient {
     public String listGames() throws Exception {
         assertLoggedIn();
         try {
-            var games = server.listGames();
+            var games = server.listGames(visitorAuthToken);
             var result = new StringBuilder();
             var gson = new Gson();
             for (var game : games) {
@@ -82,7 +83,7 @@ public class ChessClient {
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            return server.joinGame();
+            return server.joinGame(visitorAuthToken);
         }
         throw new Exception("Error joining game, please try again.");
     }
@@ -90,7 +91,7 @@ public class ChessClient {
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
-            return server.getGame();
+            return server.getGame(visitorAuthToken, params);
         }
         throw new Exception("Error getting game, please try again.");
     }
@@ -98,7 +99,7 @@ public class ChessClient {
     public String logout() throws Exception {
         assertLoggedIn();
         try {
-            server.logout();
+            server.logout(visitorAuthToken);
             state = State.LOGGED_OUT;
             visitorName = null;
             return "Successfully logged out.";

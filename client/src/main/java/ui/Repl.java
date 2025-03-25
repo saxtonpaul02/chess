@@ -11,7 +11,7 @@ public class Repl {
     }
 
     public void run() {
-        System.out.println("\uD83D\uDC36 Welcome to 240 chess. Type 'help' to get started.");
+        System.out.println("♕ Welcome to 240 chess. Type 'help' to get started.");
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
