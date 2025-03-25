@@ -26,9 +26,26 @@ public class ServerFacade {
         this.makeRequest("POST", path, params, null);
     }
 
-    public ChessGame createGame(String... params) throws Exception {
+    public void createGame(String... params) throws Exception {
         var path = "/game";
-        return this.makeRequest("POST", path, params, ChessGame.class);
+        this.makeRequest("POST", path, params, ChessGame.class);
+    }
+
+    public ChessGame[] listGames() throws Exception {
+        var path = "/game";
+        record listGamesResponse(ChessGame[] game) {}
+        var response = this.makeRequest("GET", path, null, listGamesResponse.class);
+        return response.game();
+    }
+
+    public ChessGame joinGame(String... params) throws Exception {
+        var path = "/game";
+        return this.makeRequest("PUT", path, params, ChessGame.class);
+    }
+
+    public ChessGame getGame(String...params) throws Exception {
+        var path = "/game";
+        return this.makeRequest("GET", path, params, ChessGame.class);
     }
 
     public void logout() throws Exception {

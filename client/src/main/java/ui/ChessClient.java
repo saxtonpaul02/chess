@@ -1,6 +1,7 @@
 package ui;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import server.ServerFacade;
 import java.util.Arrays;
 
@@ -67,16 +68,36 @@ public class ChessClient {
 
     public String listGames() throws Exception {
         assertLoggedIn();
-        throw new Exception("Error listing games, please try again.");
+        try {
+            var games = server.listGames();
+            var result = new StringBuilder();
+            var gson = new Gson();
+            for (var game : games) {
+                result.append(gson.toJson(game)).append('\n');
+            }
+            return result.toString();
+        } catch (Exception ex) {
+            throw new Exception("Error listing games, please try again.");
+        }
     }
 
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
+        if (params.length == 2) {
+            ChessGame game = server.joinGame(params);
+            if (params[1].equals("BLACK")) {
+                return null;
+            } else { return game.toString(); }
+        }
         throw new Exception("Error joining game, please try again.");
     }
 
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
+        if (params.length == 1) {
+            ChessGame game = server.getGame();
+            return game.toString();
+        }
         throw new Exception("Error getting game, please try again.");
     }
 
