@@ -58,7 +58,7 @@ public class ChessClient {
 
     public String createGame(String... params) throws Exception {
         assertLoggedIn();
-        if (params.length == 2) {
+        if (params.length == 1) {
             server.createGame(visitorAuthToken, params);
             return String.format("Successfully created game %s.", params[0]);
         }
@@ -70,9 +70,12 @@ public class ChessClient {
         try {
             var games = server.listGames(visitorAuthToken);
             var result = new StringBuilder();
-            var gson = new Gson();
-            for (var game : games) {
-                result.append(gson.toJson(game)).append('\n');
+            for (int i = 1; i <= games.length; i++) {
+                result.append(String.valueOf(i)).append(". ");
+                result.append("Name: ").append(games[i-1].gameName()).append(", ");
+                result.append("White Player: ").append(games[i-1].whiteUsername()).append(", ");
+                result.append("Black Player: ").append(games[i-1].blackUsername());
+                result.append("\n");
             }
             return result.toString();
         } catch (Exception ex) {
@@ -83,7 +86,7 @@ public class ChessClient {
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            return server.joinGame(visitorAuthToken);
+            return server.joinGame(visitorAuthToken, params);
         }
         throw new Exception("Error joining game, please try again.");
     }

@@ -34,28 +34,28 @@ public class ServerFacade {
 
     public void createGame(String authToken, String... params) throws Exception {
         var path = "/game";
-        CreateRequest createRequest = new CreateRequest(params[1], params[0]);
+        CreateRequest createRequest = new CreateRequest(authToken, params[0]);
         this.makeRequest("POST", path, createRequest, authToken, ChessGame.class);
     }
 
-    public ChessGame[] listGames(String authToken) throws Exception {
+    public ListResult[] listGames(String authToken) throws Exception {
         var path = "/game";
-        record listGamesResponse(ChessGame[] game) {}
-        var response = this.makeRequest("GET", path, null, authToken, listGamesResponse.class);
-        return response.game();
+        record ListResultList(ListResult[] games) {}
+        ListResultList lrl = this.makeRequest("GET", path, null, authToken, ListResultList.class);
+        return lrl.games();
     }
 
     public String joinGame(String authToken, String... params) throws Exception {
         var path = "/game";
         ChessGame.TeamColor teamColor;
-        if (params[1].equals("WHITE")) {
+        if (params[1].equals("white")) {
             teamColor = ChessGame.TeamColor.WHITE;
-        } else if (params[1].equals("BLACK")) {
+        } else if (params[1].equals("black")) {
             teamColor = ChessGame.TeamColor.BLACK;
         } else {
-            throw new Exception("Invalid team color (must be all caps).");
+            throw new Exception("Invalid team color.");
         }
-        JoinRequest joinRequest = new JoinRequest(params[2], teamColor, Integer.parseInt(params[0]));
+        JoinRequest joinRequest = new JoinRequest(authToken, teamColor, Integer.parseInt(params[0]));
         if (teamColor == ChessGame.TeamColor.WHITE) {
             return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), false);
         } else {
@@ -65,9 +65,7 @@ public class ServerFacade {
 
     public String getGame(String authToken, String...params) throws Exception {
         var path = "/game";
-        record GetRequest(String gameID) {}
-        GetRequest getRequest = new GetRequest(params[0]);
-        return drawGame(this.makeRequest("POST", path, getRequest, authToken, ChessGame.class), false);
+        return drawGame(this.makeRequest("GET", path, null, authToken, ChessGame.class), false);
     }
 
     public void logout(String authToken) throws Exception {
@@ -113,89 +111,102 @@ public class ServerFacade {
 
     private static String drawGame(ChessGame game, boolean flip) {
         StringBuilder response = new StringBuilder(" \u2003 ");
-        if (flip) {
-            for (int i = 9; i >= 0; i--) {
-                if (i == 0 || i == 9) {
-                    response.append(getRowBorder(i, flip));
-                } else {
-                    for (int j = 9; j >= 0; j--) {
-                        response.append(getColumnBorder(j, flip));
-                        response.append(getSquareString(i, j));
-                        response.append(getPieceString(i, j, flip));
-                    }
+        for (int i = 0; i < 10; i++) {
+            if (i == 0 || i == 9) {
+                response.append(getRowBorder(i, flip));
+            } else {
+                for (int j = 0; j < 10; j++) {
+                    response.append(getLeftColumnBorder(i, j, flip));
+                    response.append(getSquareString(i, j, flip));
+                    response.append(getPieceString(i, j, flip));
+                    response.append(getRightColumnBorder(i, j, flip));
                 }
             }
-        } else {
-            for (int i = 0; i < 10; i++) {
-                if (i == 0 || i == 9) {
-                    response.append(getRowBorder(i, flip));
-                } else {
-                    for (int j = 0; j < 10; j++) {
-                        response.append(getColumnBorder(j, flip));
-                        response.append(getSquareString(i, j));
-                        response.append(getPieceString(i, j, flip));
-                    }
-                }
-            }
+            response.append("\n");
         }
+        response.append("\u001B[0m");
         return response.toString();
     }
 
     private static String getRowBorder(int row, boolean flip) {
         if (!flip) {
             if (row == 0) {
-                return " a  b  c  d  e  f  g  h  \u2003 \n";
+                return "a\u2003 b\u2003 c\u2003 d\u2003 e\u2003 f\u2003 g\u2003 h  \u2003";
             } else {
-                return " \u2003  a  b  c  d  e  f  g  h  \u2003 \n";
+                return "\u2003  a\u2003 b\u2003 c\u2003 d\u2003 e\u2003 f\u2003 g\u2003 h  \u2003";
             }
         } else {
             if (row == 0) {
-                return " h  g  f  e  d  c  b  a  \u2003 \n";
+                return "h\u2003 g\u2003 f\u2003 e\u2003 d\u2003 c\u2003 b\u2003 a  \u2003";
             } else {
-                return " \u2003  h  g  f  e  d  c  b  a  \u2003 \n";
+                return "\u2003  h\u2003 g\u2003 f\u2003 e\u2003 d\u2003 c\u2003 b\u2003 a  \u2003";
             }
         }
     }
 
-    private static String getColumnBorder(int column, boolean flip) {
-        if (column > 0 && column < 9) {
+    private static String getLeftColumnBorder(int row, int column, boolean flip) {
+        if (column == 0) {
             String border = " ";
             if (!flip) {
-                border = border + String.valueOf(column) + " ";
+                border = border + String.valueOf(9 - row) + " ";
             } else {
-                border = border + String.valueOf(9 - column) + " ";
+                border = border + String.valueOf(row) + " ";
             }
             return border;
         }
         return "";
     }
 
-    private static String getSquareString(int row, int column) {
+    private static String getRightColumnBorder(int row, int column, boolean flip) {
+        if (column == 9) {
+            String border = "\u001B[0m ";
+            if (!flip) {
+                border = border + String.valueOf(9 - row) + " ";
+            } else {
+                border = border + String.valueOf(row) + " ";
+            }
+            return border;
+        }
+        return "";
+    }
+
+    private static String getSquareString(int row, int column, boolean flip) {
         String square = "\u001b[100m";
-        if ((row + column) % 2 != 0) {
-            square = "\u001b[107m";
+        if (!flip) {
+            if ((row + column) % 2 != 0) {
+                square = "\u001b[107m";
+            }
+        } else {
+            if ((row + column) % 2 == 0) {
+                square = "\u001b[107m";
+            }
         }
         return square;
     }
 
     private static String getPieceString(int row, int column, boolean flip) {
-        if (row > 1 && row < 6) {
-            return " \u2003 ";
-        } else if (row == 1 && !flip) {
-            return whiteBackRowToString(column);
-        } else if (row == 1 && flip) {
-            return blackBackRowToString(column);
-        } else if (row == 8 && !flip) {
-            return blackBackRowToString(column);
-        } else if (row == 8 && flip) {
-            return whiteBackRowToString(column);
-        } else if (row == 2 && flip) {
-            return " ♟ ";
-        } else if (row == 7 && !flip) {
-            return " ♟ ";
-        } else {
-            return " ♙ ";
+        if (column != 0 && column != 9) {
+            if (row > 2 && row < 7) {
+                return " \u2003 ";
+            } else if (row == 1 && flip) {
+                return whiteBackRowToString(column);
+            } else if (row == 1 && !flip) {
+                return blackBackRowToString(column);
+            } else if (row == 8 && flip) {
+                return blackBackRowToString(column);
+            } else if (row == 8 && !flip) {
+                return whiteBackRowToString(column);
+            } else if (row == 2 && !flip) {
+                return " ♟ ";
+            } else if (row == 7 && !flip) {
+                return " ♙ ";
+            } else if (row == 7 && flip) {
+                return " ♟ ";
+            } else {
+                return " ♙ ";
+            }
         }
+        return "";
     }
 
     private static String blackBackRowToString(int column) {
@@ -206,10 +217,10 @@ public class ServerFacade {
         } else if (column == 3 || column == 6) {
             return " ♝ ";
         } else if (column == 4) {
-            return " ♛ ";
-        } else {
             return " ♚ ";
-        }
+        } else if (column == 5) {
+            return " ♛ ";
+        } else { return ""; }
     }
 
     private static String whiteBackRowToString(int column) {
@@ -221,8 +232,8 @@ public class ServerFacade {
             return " ♗ ";
         } else if (column == 4) {
             return " ♕ ";
-        } else {
+        } else if (column == 5) {
             return " ♔ ";
-        }
+        } else { return ""; }
     }
 }
