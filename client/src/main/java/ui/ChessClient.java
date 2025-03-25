@@ -82,10 +82,7 @@ public class ChessClient {
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            ChessGame game = server.joinGame(params);
-            if (params[1].equals("BLACK")) {
-                return null;
-            } else { return game.toString(); }
+            return server.joinGame();
         }
         throw new Exception("Error joining game, please try again.");
     }
@@ -93,8 +90,7 @@ public class ChessClient {
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
-            ChessGame game = server.getGame();
-            return game.toString();
+            return server.getGame();
         }
         throw new Exception("Error getting game, please try again.");
     }

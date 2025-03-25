@@ -38,14 +38,18 @@ public class ServerFacade {
         return response.game();
     }
 
-    public ChessGame joinGame(String... params) throws Exception {
+    public String joinGame(String... params) throws Exception {
         var path = "/game";
-        return this.makeRequest("PUT", path, params, ChessGame.class);
+        if (params[1].equals("WHITE")) {
+            return drawGame(this.makeRequest("PUT", path, params, ChessGame.class), false);
+        } else {
+            return drawGame(this.makeRequest("PUT", path, params, ChessGame.class), true);
+        }
     }
 
-    public ChessGame getGame(String...params) throws Exception {
+    public String getGame(String...params) throws Exception {
         var path = "/game";
-        return this.makeRequest("GET", path, params, ChessGame.class);
+        return drawGame(this.makeRequest("GET", path, params, ChessGame.class), false);
     }
 
     public void logout() throws Exception {
@@ -84,5 +88,114 @@ public class ServerFacade {
             }
         }
         return response;
+    }
+
+    private static String drawGame(ChessGame game, boolean flip) {
+        StringBuilder response = new StringBuilder(" \u2003 ");
+        if (flip) {
+            for (int i = 7; i >= 0; i--) {
+                for (int j = 7; j >= 0; j--) {
+
+                }
+            }
+        } else {
+            for (int i = 0; i < 10; i++) {
+                if (i == 0 || i == 9) {
+                    response.append(getRowBorder(i, flip));
+                } else {
+                    for (int j = 0; j < 10; j++) {
+                        response.append(getColumnBorder(j, flip));
+                        String square = getSquareString(i, j);
+                        String piece = getPieceString(i, j, flip);
+                    }
+                }
+            }
+        }
+        return response.toString();
+    }
+
+    private static String getRowBorder(int row, boolean flip) {
+        if (!flip) {
+            if (row == 0) {
+                return " a  b  c  d  e  f  g  h  \u2003 \n";
+            } else {
+                return " \u2003  a  b  c  d  e  f  g  h  \u2003 \n";
+            }
+        } else {
+            if (row == 0) {
+                return " h  g  f  e  d  c  b  a  \u2003 \n";
+            } else {
+                return " \u2003  h  g  f  e  d  c  b  a  \u2003 \n";
+            }
+        }
+    }
+
+    private static String getColumnBorder(int column, boolean flip) {
+        if (column > 0 && column < 9) {
+            String border = " ";
+            if (!flip) {
+                border = border + String.valueOf(column) + " ";
+            } else {
+                border = border + String.valueOf(9 - column) + " ";
+            }
+            return border;
+        }
+        return "";
+    }
+
+    private static String getSquareString(int row, int column) {
+        String square = "\u001b[100m";
+        if ((row + column) % 2 != 0) {
+            square = "\u001b[107m";
+        }
+        return square;
+    }
+
+    private static String getPieceString(int row, int column, boolean flip) {
+        if (row > 1 && row < 6) {
+            return " \u2003 ";
+        } else if (row == 1 && !flip) {
+            return whiteBackRowToString(column);
+        } else if (row == 1 && flip) {
+            return blackBackRowToString(column);
+        } else if (row == 8 && !flip) {
+            return blackBackRowToString(column);
+        } else if (row == 8 && flip) {
+            return whiteBackRowToString(column);
+        } else if (row == 2 && flip) {
+            return " ♟ ";
+        } else if (row == 7 && !flip) {
+            return " ♟ ";
+        } else {
+            return " ♙ ";
+        }
+    }
+
+    private static String blackBackRowToString(int column) {
+        if (column == 1 || column == 8) {
+            return " ♜ ";
+        } else if (column == 2 || column == 7) {
+            return " ♞ ";
+        } else if (column == 3 || column == 6) {
+            return " ♝ ";
+        } else if (column == 4) {
+            return " ♛ ";
+        } else {
+            return " ♚ ";
+        }
+    }
+
+    private static String whiteBackRowToString(int column) {
+        if (column == 1 || column == 8) {
+            return " ♖ ";
+        } else if (column == 2 || column == 7) {
+            return " ♘ ";
+        } else if (column == 3 || column == 6) {
+            return " ♗ ";
+        } else if (column == 4) {
+            return " ♕ ";
+        } else {
+            return " ♔ ";
+        }
     }
 }
