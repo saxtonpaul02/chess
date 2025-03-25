@@ -8,19 +8,16 @@ import java.util.Arrays;
 public class ChessClient {
     private String visitorName = null;
     private final ServerFacade server;
-    private final String serverUrl;
-    private State state = State.LOGGED_OUT;
+    public State state = State.LOGGED_OUT;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
     }
 
-    public String eval(String input) {
+    public String eval(String... args) {
         try {
-            var tokens = input.toLowerCase().split(" ");
-            var cmd = (tokens.length > 0) ? tokens[0] : "help";
-            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            var cmd = (args.length > 0) ? args[0] : "help";
+            var params = Arrays.copyOfRange(args, 1, args.length);
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
