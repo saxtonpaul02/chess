@@ -14,10 +14,11 @@ public class ChessClient {
         server = new ServerFacade(serverUrl);
     }
 
-    public String eval(String... args) {
+    public String eval(String input) {
         try {
-            var cmd = (args.length > 0) ? args[0] : "help";
-            var params = Arrays.copyOfRange(args, 1, args.length);
+            var tokens = input.toLowerCase().split(" ");
+            var cmd = (tokens.length > 0) ? tokens[0] : "help";
+            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
