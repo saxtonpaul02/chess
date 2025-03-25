@@ -93,9 +93,15 @@ public class ServerFacade {
     private static String drawGame(ChessGame game, boolean flip) {
         StringBuilder response = new StringBuilder(" \u2003 ");
         if (flip) {
-            for (int i = 7; i >= 0; i--) {
-                for (int j = 7; j >= 0; j--) {
-
+            for (int i = 9; i >= 0; i--) {
+                if (i == 0 || i == 9) {
+                    response.append(getRowBorder(i, flip));
+                } else {
+                    for (int j = 9; j >= 0; j--) {
+                        response.append(getColumnBorder(j, flip));
+                        response.append(getSquareString(i, j));
+                        response.append(getPieceString(i, j, flip));
+                    }
                 }
             }
         } else {
@@ -105,8 +111,8 @@ public class ServerFacade {
                 } else {
                     for (int j = 0; j < 10; j++) {
                         response.append(getColumnBorder(j, flip));
-                        String square = getSquareString(i, j);
-                        String piece = getPieceString(i, j, flip);
+                        response.append(getSquareString(i, j));
+                        response.append(getPieceString(i, j, flip));
                     }
                 }
             }
