@@ -1,8 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import com.google.gson.Gson;
-import server.ServerFacade;
+import serverFacade.ServerFacade;
 import java.util.Arrays;
 
 public class ChessClient {
