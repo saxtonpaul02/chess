@@ -63,7 +63,7 @@ public class ServerFacade {
         }
     }
 
-    public String getGame(String authToken, String...params) throws Exception {
+    public String observeGame(String authToken, String...params) throws Exception {
         var path = "/game";
         return drawGame(this.makeRequest("GET", path, null, authToken, ChessGame.class), false);
     }

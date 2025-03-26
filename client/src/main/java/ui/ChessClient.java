@@ -94,7 +94,7 @@ public class ChessClient {
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
-            return server.getGame(visitorAuthToken, params);
+            return server.observeGame(visitorAuthToken, params);
         }
         throw new Exception("Error getting game, please try again.");
     }
