@@ -19,58 +19,87 @@ public class ServerFacade {
     }
 
     public String register(String... params) throws Exception {
-        var path = "/user";
-        RegisterRequest registerRequest = new RegisterRequest(params[0], params[1], params[2]);
-        RegisterResult registerResult = this.makeRequest("POST", path, registerRequest, null, RegisterResult.class);
-        return registerResult.authToken();
+        try {
+            var path = "/user";
+            RegisterRequest registerRequest = new RegisterRequest(params[0], params[1], params[2]);
+            RegisterResult registerResult = this.makeRequest("POST", path, registerRequest, null, RegisterResult.class);
+            return registerResult.authToken();
+        } catch (Exception ex) {
+            throw new Exception("Error registering, please try again. Enter help if assistance is needed.");
+        }
     }
 
     public String login(String... params) throws Exception {
-        var path = "/session";
-        LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
-        LoginResult loginResult = this.makeRequest("POST", path, loginRequest, null, LoginResult.class);
-        return loginResult.authToken();
+        try {
+            var path = "/session";
+            LoginRequest loginRequest = new LoginRequest(params[0], params[1]);
+            LoginResult loginResult = this.makeRequest("POST", path, loginRequest, null, LoginResult.class);
+            return loginResult.authToken();
+        } catch (Exception ex) {
+            throw new Exception("Error logging in, please try again. Enter help if assistance is needed.");
+        }
     }
 
     public void createGame(String authToken, String... params) throws Exception {
-        var path = "/game";
-        CreateRequest createRequest = new CreateRequest(authToken, params[0]);
-        this.makeRequest("POST", path, createRequest, authToken, ChessGame.class);
+        try {
+            var path = "/game";
+            CreateRequest createRequest = new CreateRequest(authToken, params[0]);
+            this.makeRequest("POST", path, createRequest, authToken, ChessGame.class);
+        } catch (Exception ex) {
+            throw new Exception("Error creating game, please try again. Enter help if assistance is needed.");
+        }
     }
 
     public ListResult[] listGames(String authToken) throws Exception {
-        var path = "/game";
-        record ListResultList(ListResult[] games) {}
-        ListResultList lrl = this.makeRequest("GET", path, null, authToken, ListResultList.class);
-        return lrl.games();
+        try {
+            var path = "/game";
+            record ListResultList(ListResult[] games) {
+            }
+            ListResultList lrl = this.makeRequest("GET", path, null, authToken, ListResultList.class);
+            return lrl.games();
+        } catch (Exception ex) {
+            throw new Exception("Error listing games, please try again. Enter help if assistance is needed.");
+        }
     }
 
     public String joinGame(String authToken, String... params) throws Exception {
-        var path = "/game";
-        ChessGame.TeamColor teamColor;
-        if (params[1].equals("white")) {
-            teamColor = ChessGame.TeamColor.WHITE;
-        } else if (params[1].equals("black")) {
-            teamColor = ChessGame.TeamColor.BLACK;
-        } else {
-            throw new Exception("Invalid team color.");
-        }
-        JoinRequest joinRequest = new JoinRequest(authToken, teamColor, Integer.parseInt(params[0]));
-        if (teamColor == ChessGame.TeamColor.WHITE) {
-            return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), false);
-        } else {
-            return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), true);
+        try {
+            var path = "/game";
+            ChessGame.TeamColor teamColor;
+            if (params[1].equals("white")) {
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (params[1].equals("black")) {
+                teamColor = ChessGame.TeamColor.BLACK;
+            } else {
+                throw new Exception("Invalid team color.");
+            }
+            JoinRequest joinRequest = new JoinRequest(authToken, teamColor, Integer.parseInt(params[0]));
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), false);
+            } else {
+                return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), true);
+            }
+        } catch (Exception ex) {
+            throw new Exception("Error joining game, please try again. Enter help if assistance is needed.");
         }
     }
 
     public String observeGame(String authToken, String...params) throws Exception {
-        var path = "/game";
-        return drawGame(this.makeRequest("GET", path, null, authToken, ChessGame.class), false);
+        try {
+            var path = "/game";
+            return drawGame(this.makeRequest("GET", path, null, authToken, ChessGame.class), false);
+        } catch (Exception ex) {
+            throw new Exception("Error observing game, please try again. Enter help if assistance is needed.");
+        }
     }
 
     public void logout(String authToken) throws Exception {
-        var path = "/session";
-        this.makeRequest("DELETE", path, null, authToken, null);
+        try {
+            var path = "/session";
+            this.makeRequest("DELETE", path, null, authToken, null);
+        } catch (Exception ex) {
+            throw new Exception("Error logging out, please try again. Enter help if assistance is needed.");
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
