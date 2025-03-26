@@ -3,7 +3,7 @@ package client;
 import org.junit.jupiter.api.*;
 import result.ListResult;
 import server.Server;
-import serverFacade.ServerFacade;
+import facade.ServerFacade;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {

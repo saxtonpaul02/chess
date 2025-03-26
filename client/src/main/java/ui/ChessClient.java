@@ -1,6 +1,6 @@
 package ui;
 
-import serverFacade.ServerFacade;
+import facade.ServerFacade;
 import java.util.Arrays;
 
 public class ChessClient {
