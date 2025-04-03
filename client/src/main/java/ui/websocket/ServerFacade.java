@@ -1,4 +1,4 @@
-package facade;
+package ui.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
