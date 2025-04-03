@@ -14,7 +14,7 @@ public class ServerFacade {
 
     private final String serverUrl;
 
-    public ServerFacade(String serverUrl) {
+    public ServerFacade(String serverUrl, ServerMessageObserver messageObserver) {
         this.serverUrl = serverUrl;
     }
 

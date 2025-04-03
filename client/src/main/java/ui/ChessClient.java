@@ -1,6 +1,8 @@
 package ui;
 
-import facade.ServerFacade;
+import ui.websocket.ServerFacade;
+import ui.websocket.ServerMessageObserver;
+
 import java.util.Arrays;
 
 public class ChessClient {
@@ -9,8 +11,8 @@ public class ChessClient {
     private final ServerFacade server;
     public State state = State.LOGGED_OUT;
 
-    public ChessClient(String serverUrl) {
-        server = new ServerFacade(serverUrl);
+    public ChessClient(String serverUrl, ServerMessageObserver messageObserver) {
+        server = new ServerFacade(serverUrl, messageObserver);
     }
 
     public String eval(String input) {

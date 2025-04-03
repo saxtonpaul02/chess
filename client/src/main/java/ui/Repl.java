@@ -1,13 +1,16 @@
 package ui;
 
+import ui.websocket.ServerMessageObserver;
+import websocket.messages.ServerMessage;
+
 import java.util.Scanner;
 
-public class Repl {
+public class Repl implements ServerMessageObserver {
 
     private final ChessClient client;
 
     public Repl(String serverUrl) {
-        client = new ChessClient(serverUrl);
+        client = new ChessClient(serverUrl, this);
     }
 
     public void run() {
@@ -25,6 +28,12 @@ public class Repl {
             }
         }
         System.out.println();
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+        System.out.println();
+
     }
 
     private void printPrompt() {

@@ -3,7 +3,7 @@ package client;
 import org.junit.jupiter.api.*;
 import result.ListResult;
 import server.Server;
-import facade.ServerFacade;
+import ui.websocket.ServerFacade;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
@@ -18,7 +18,7 @@ public class ServerFacadeTests {
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         String url = "http://localhost:" + port;
-        serverFacade = new ServerFacade(url);
+        serverFacade = new ServerFacade(url, null);
     }
 
     @AfterAll
