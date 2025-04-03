@@ -1,7 +1,10 @@
 package ui.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -37,19 +40,43 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void playGame(String authToken, String...params) throws Exception {
-        int gameID = Integer.parseInt(params[0]);
-        ChessGame.TeamColor teamColor;
-        if (params[1].equals("white")) {
-            teamColor = ChessGame.TeamColor.WHITE;
-        } else if (params[1].equals("black")) {
-            teamColor = ChessGame.TeamColor.BLACK;
-        } else {
-            throw new Exception("Error: Invalid team color.");
+    public void joinGame(String authToken, String param) throws Exception {
+        int gameID = Integer.parseInt(param);
+        try {
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to connect to game");
         }
     }
 
-    public void observeGame(String authToken, String...params) throws Exception {
-        int gameID = Integer.parseInt(params[0]);
+    public void leaveGame(String authToken, String param) throws Exception {
+        int gameID = Integer.parseInt(param);
+        try {
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to leave the game");
+        }
+    }
+
+    public void resignGame(String authToken, String param) throws Exception {
+        int gameID = Integer.parseInt(param);
+        try {
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to resign the game");
+        }
+    }
+
+    public void makeMove(String authToken, String param, ChessMove move) throws Exception {
+        int gameID = Integer.parseInt(param);
+        try {
+            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to make move");
+        }
     }
 }

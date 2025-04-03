@@ -13,7 +13,6 @@ public class ChessClient {
     private final String serverUrl;
     private final ServerMessageObserver messageObserver;
     public State state = State.LOGGED_OUT;
-    private WebSocketFacade ws;
 
     public ChessClient(String serverUrl, ServerMessageObserver messageObserver) {
         server = new ServerFacade(serverUrl, messageObserver);
@@ -92,8 +91,7 @@ public class ChessClient {
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            ws = new WebSocketFacade(serverUrl, messageObserver);
-            ws.playGame(visitorAuthToken, params[0], params[1]);
+            server.joinGame(visitorAuthToken, params[0], params[1]);
             return String.format("Successfully joined game %s as %s.", params[0], params[1]);
         }
         throw new Exception("Error joining game, please try again.");
@@ -102,9 +100,8 @@ public class ChessClient {
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
-            ws = new WebSocketFacade(serverUrl, messageObserver);
-            ws.observeGame(visitorAuthToken, params[0]);
-            return server.observeGame(visitorAuthToken, params);
+            server.observeGame(visitorAuthToken, params[0]);
+            return String.format("Successfully joined game %s as observer.", params[0]);
         }
         throw new Exception("Error getting game, please try again.");
     }
