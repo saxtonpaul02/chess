@@ -62,7 +62,7 @@ public class ServerFacade {
         }
     }
 
-    public String joinGame(String authToken, String... params) throws Exception {
+    public void joinGame(String authToken, String... params) throws Exception {
         try {
             var path = "/game";
             ChessGame.TeamColor teamColor;
@@ -71,25 +71,12 @@ public class ServerFacade {
             } else if (params[1].equals("black")) {
                 teamColor = ChessGame.TeamColor.BLACK;
             } else {
-                throw new Exception("Invalid team color.");
+                throw new Exception("Error: Invalid team color.");
             }
             JoinRequest joinRequest = new JoinRequest(authToken, teamColor, Integer.parseInt(params[0]));
-            if (teamColor == ChessGame.TeamColor.WHITE) {
-                return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), false);
-            } else {
-                return drawGame(this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class), true);
-            }
+            this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class);
         } catch (Exception ex) {
             throw new Exception("Error joining game, please try again. Enter help if assistance is needed.");
-        }
-    }
-
-    public String observeGame(String authToken, String...params) throws Exception {
-        try {
-            var path = "/game";
-            return drawGame(this.makeRequest("GET", path, null, authToken, ChessGame.class), false);
-        } catch (Exception ex) {
-            throw new Exception("Error observing game, please try again. Enter help if assistance is needed.");
         }
     }
 

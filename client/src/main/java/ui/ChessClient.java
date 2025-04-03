@@ -2,6 +2,7 @@ package ui;
 
 import ui.websocket.ServerFacade;
 import ui.websocket.ServerMessageObserver;
+import ui.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 
@@ -9,10 +10,15 @@ public class ChessClient {
     private String visitorName = null;
     private String visitorAuthToken = null;
     private final ServerFacade server;
+    private final String serverUrl;
+    private final ServerMessageObserver messageObserver;
     public State state = State.LOGGED_OUT;
+    private WebSocketFacade ws;
 
     public ChessClient(String serverUrl, ServerMessageObserver messageObserver) {
         server = new ServerFacade(serverUrl, messageObserver);
+        this.serverUrl = serverUrl;
+        this.messageObserver = messageObserver;
     }
 
     public String eval(String input) {
@@ -86,7 +92,9 @@ public class ChessClient {
     public String playGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 2) {
-            return server.joinGame(visitorAuthToken, params);
+            ws = new WebSocketFacade(serverUrl, messageObserver);
+            ws.playGame(visitorAuthToken, params[0], params[1]);
+            return String.format("Successfully joined game %s as %s.", params[0], params[1]);
         }
         throw new Exception("Error joining game, please try again.");
     }
@@ -94,6 +102,8 @@ public class ChessClient {
     public String observeGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
+            ws = new WebSocketFacade(serverUrl, messageObserver);
+            ws.observeGame(visitorAuthToken, params[0]);
             return server.observeGame(visitorAuthToken, params);
         }
         throw new Exception("Error getting game, please try again.");

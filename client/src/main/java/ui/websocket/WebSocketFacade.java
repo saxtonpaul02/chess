@@ -1,7 +1,7 @@
 package ui.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
-import exception.ErrorException;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -35,5 +35,21 @@ public class WebSocketFacade extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
+
+    public void playGame(String authToken, String...params) throws Exception {
+        int gameID = Integer.parseInt(params[0]);
+        ChessGame.TeamColor teamColor;
+        if (params[1].equals("white")) {
+            teamColor = ChessGame.TeamColor.WHITE;
+        } else if (params[1].equals("black")) {
+            teamColor = ChessGame.TeamColor.BLACK;
+        } else {
+            throw new Exception("Error: Invalid team color.");
+        }
+    }
+
+    public void observeGame(String authToken, String...params) throws Exception {
+        int gameID = Integer.parseInt(params[0]);
     }
 }
