@@ -4,11 +4,11 @@ import chess.ChessMove;
 
 public class MakeMoveCommand {
 
-    private final ChessMove move;
+    private final String move;
 
-    public MakeMoveCommand(UserGameCommand command) {
+    public MakeMoveCommand(UserGameCommand command, String move) {
         this.move = move;
     }
 
-    public ChessMove getMove() { return move; }
+    public String getMove() { return this.move; }
 }

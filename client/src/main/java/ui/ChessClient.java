@@ -1,8 +1,8 @@
 package ui;
 
+import chess.ChessGame;
 import ui.websocket.ServerFacade;
 import ui.websocket.ServerMessageObserver;
-import ui.websocket.WebSocketFacade;
 import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
@@ -11,14 +11,10 @@ public class ChessClient implements ServerMessageObserver {
     private String visitorName = null;
     private String visitorAuthToken = null;
     private final ServerFacade server;
-    private final String serverUrl;
-    private final ServerMessageObserver messageObserver;
     public State state = State.LOGGED_OUT;
 
     public ChessClient(String serverUrl, ServerMessageObserver messageObserver) {
         server = new ServerFacade(serverUrl, messageObserver);
-        this.serverUrl = serverUrl;
-        this.messageObserver = messageObserver;
     }
 
     public String eval(String input) {
@@ -145,7 +141,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String makeMove(String... params) throws Exception {
         if (params.length == 2) {
-
+            server.makeMove(params);
             return "";
         }
         throw new Exception("Error making move, please try again.");
@@ -215,21 +211,25 @@ public class ChessClient implements ServerMessageObserver {
     @Override
     public void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification();
-            case ERROR -> displayError();
+            case NOTIFICATION -> displayNotification(message);
+            case ERROR -> displayError(message);
             case LOAD_GAME -> loadGame();
         }
     }
 
-    private void displayNotification() {
-
+    private void displayNotification(ServerMessage message) {
+        System.out.println(message.getMessage());
     }
 
-    private void displayError() {
-
+    private void displayError(ServerMessage message) {
+        System.out.println(message.getMessage());
     }
 
     private void loadGame() {
-
+        try {
+            redrawBoard();
+        } catch (Exception ex) {
+            System.out.println("Error loading game, please try redrawing board.");
+        }
     }
 }

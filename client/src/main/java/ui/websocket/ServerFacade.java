@@ -103,6 +103,26 @@ public class ServerFacade {
         }
     }
 
+    public void redrawBoard() throws Exception {
+        try {
+            drawGame();
+        } catch (Exception ex) {
+            throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.");
+        }
+    }
+
+    public void highlightLegalMoves(String... params) throws Exception {
+        try {
+            drawGame();
+        } catch (Exception ex) {
+            throw new Exception("Error highlighting legal moves, please try again. Enter help if assistance is needed.");
+        }
+    }
+
+    public void makeMove(String... params) throws Exception {
+
+    }
+
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
         URL url = (new URI(serverUrl + path)).toURL();
         HttpURLConnection http = (HttpURLConnection) url.openConnection();
