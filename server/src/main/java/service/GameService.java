@@ -58,12 +58,16 @@ public class GameService {
         }
     }
 
-    public Collection<ListResult> list(String authToken) throws DataAccessException{
+    public Collection<ListResult> list(String authToken) throws DataAccessException {
         AuthData authData = authDao.getAuth(authToken);
         if (authData == null) {
             return null;
         } else {
             return gameDao.listGames();
         }
+    }
+
+    public GameData getGame(int gameID) throws DataAccessException {
+        return gameDao.getGame(gameID);
     }
 }

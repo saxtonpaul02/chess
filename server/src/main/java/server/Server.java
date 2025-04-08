@@ -3,6 +3,7 @@ package server;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.*;
 import exception.ErrorException;
+import server.websocket.WebSocketHandler;
 import service.*;
 import spark.*;
 import com.google.gson.Gson;
@@ -20,6 +21,7 @@ public class Server {
     private final ClearService clearService = new ClearService(authDao, gameDao, userDao);
     private final GameService gameService = new GameService(authDao, gameDao);
     private final UserService userService = new UserService(authDao, userDao);
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler(gameService, userService);
 
     public Server() {}
 
@@ -33,6 +35,7 @@ public class Server {
         Spark.put("/game", this::join);
         Spark.get("/game", this::list);
         Spark.delete("/db", this::clear);
+        Spark.webSocket("/ws", webSocketHandler);
         Spark.awaitInitialization();
         return Spark.port();
     }

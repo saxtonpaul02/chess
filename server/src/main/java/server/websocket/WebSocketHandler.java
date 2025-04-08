@@ -9,6 +9,8 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import service.GameService;
+import service.UserService;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -19,6 +21,13 @@ import java.io.IOException;
 public class WebSocketHandler {
 
     private final WebSocketSessions webSocketSessions = new WebSocketSessions();
+    private final GameService gameService;
+    private final UserService userService;
+
+    public WebSocketHandler(GameService gameService, UserService userService) {
+        this.gameService = gameService;
+        this.userService = userService;
+    }
 
     @OnWebSocketError
     public void onError(Throwable throwable) {
@@ -46,7 +55,7 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             webSocketSessions.add(gameID, session);
-            GameData gameData;
+            GameData gameData = gameService.getGame(gameID);
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
             sendMessage(message, session);
             broadcastMessage(gameID, message, session);
