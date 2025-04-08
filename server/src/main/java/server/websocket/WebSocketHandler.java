@@ -1,5 +1,8 @@
 package server.websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -43,7 +46,7 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             webSocketSessions.add(gameID, session);
-            GameData gameData = ;
+            GameData gameData;
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
             sendMessage(message, session);
             broadcastMessage(gameID, message, session);
@@ -64,8 +67,23 @@ public class WebSocketHandler {
         }
     }
 
-    private void makeMove(Session session, String username, MakeMoveCommand command) {
-
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws InvalidMoveException, IOException {
+        try {
+            int gameID = command.getGameID();
+            GameData gameData;
+            ChessGame game = gameData.game();
+            ChessMove move = command.getMove();
+            game.makeMove(move);
+            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
+            sendMessage(message, session);
+            broadcastMessage(gameID, message, session);
+            message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    String.format("%s has made move %s", username, moveToString(move)));
+            broadcastMessage(gameID, message, session);
+        } catch (Exception ex) {
+            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
+            sendMessage(message, session);
+        }
     }
 
     private void resignGame(Session session, String username, UserGameCommand command) {
@@ -84,6 +102,34 @@ public class WebSocketHandler {
         if (webSocketSessions.get(gameID) == null) {
             webSocketSessions.add(gameID, session);
         }
+    }
+
+    private String moveToString(ChessMove move) {
+        return columnToString(move.getStartPosition().getColumn()) +
+                String.valueOf(move.getStartPosition().getRow()) +
+                columnToString(move.getEndPosition().getColumn()) +
+                String.valueOf(move.getEndPosition().getRow()) +
+                switch (move.getPromotionPiece()) {
+                    case KNIGHT -> " promote to knight";
+                    case BISHOP -> " promote to bishop";
+                    case ROOK -> " promote to rook";
+                    case QUEEN -> " promote to queen";
+                    default -> "";
+                };
+    }
+
+    private String columnToString(int col) {
+        return switch (col) {
+            case 1 -> "a";
+            case 2 -> "b";
+            case 3 -> "c";
+            case 4 -> "d";
+            case 5 -> "e";
+            case 6 -> "f";
+            case 7 -> "g";
+            case 8 -> "h";
+            default -> "";
+        };
     }
 
     private void sendMessage(ServerMessage message, Session session) throws IOException {

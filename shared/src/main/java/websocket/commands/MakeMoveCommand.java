@@ -7,9 +7,9 @@ public class MakeMoveCommand {
     private final UserGameCommand.CommandType type;
     private final String authToken;
     private final int gameID;
-    private final String move;
+    private final ChessMove move;
 
-    public MakeMoveCommand(UserGameCommand.CommandType type, String authToken, Integer gameID, String move) {
+    public MakeMoveCommand(UserGameCommand.CommandType type, String authToken, Integer gameID, ChessMove move) {
         this.type = type;
         this.authToken = authToken;
         this.gameID = gameID;
@@ -22,5 +22,5 @@ public class MakeMoveCommand {
 
     public int getGameID() { return this.gameID; }
 
-    public String getMove() { return this.move; }
+    public ChessMove getMove() { return this.move; }
 }

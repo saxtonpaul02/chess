@@ -145,6 +145,9 @@ public class ChessClient implements ServerMessageObserver {
         if (params.length == 2) {
             server.makeMove(joinedGameID, params[0], params[1], visitorAuthToken);
             return "";
+        } else if (params.length == 3) {
+            server.makeMove(joinedGameID, params[0], params[1], visitorAuthToken, params[2]);
+            return "";
         }
         throw new Exception("Error making move, please try again.");
     }
@@ -190,7 +193,7 @@ public class ChessClient implements ServerMessageObserver {
             return """
                     redraw - the board
                     highlight <STARTING_POSITION> - all legal moves of piece at given position
-                    move <STARTING_POSITION> <ENDING_POSITION> - piece from one place to another
+                    move <STARTING_POSITION> <ENDING_POSITION> <PROMOTION_PIECE> - piece from one place to another with piece to promote to, if applicable
                     resign - the game
                     leave - the game
                     help - with possible commands
