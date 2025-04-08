@@ -2,25 +2,33 @@ package websocket.commands;
 
 import chess.ChessMove;
 
-public class MakeMoveCommand {
+import java.util.Objects;
 
-    private final UserGameCommand.CommandType type;
-    private final String authToken;
-    private final int gameID;
+public class MakeMoveCommand extends UserGameCommand {
+
     private final ChessMove move;
 
-    public MakeMoveCommand(UserGameCommand.CommandType type, String authToken, Integer gameID, ChessMove move) {
-        this.type = type;
-        this.authToken = authToken;
-        this.gameID = gameID;
+    public MakeMoveCommand(String authToken, Integer gameID, ChessMove move) {
+        super(CommandType.MAKE_MOVE, authToken, gameID);
         this.move = move;
     }
 
-    public UserGameCommand.CommandType getCommandType() { return this.type; }
-
-    public String getAuthToken() { return this.authToken; }
-
-    public int getGameID() { return this.gameID; }
-
     public ChessMove getMove() { return this.move; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        MakeMoveCommand that = (MakeMoveCommand) o;
+        return Objects.equals(move, that.move);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), move);
+    }
 }
