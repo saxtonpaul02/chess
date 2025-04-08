@@ -4,6 +4,9 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import dataaccess.DataAccessException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -35,19 +38,27 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) {
+    public void onMessage(Session session, String message) throws IOException {
         try {
-            UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-            String username = getUsername(command.getAuthToken());
-            saveSession(command.getGameID(), session);
-            switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, command);
-                case LEAVE -> leaveGame(session, username, command);
-                case RESIGN -> resignGame(session, username, command);
+            String username;
+            JsonObject json = JsonParser.parseString(message).getAsJsonObject();
+            if (json.get("move").getAsString() == null) {
+                UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
+                username = getUsername(command.getAuthToken());
+                saveSession(command.getGameID(), session);
+                switch (command.getCommandType()) {
+                    case CONNECT -> connect(session, username, command);
+                    case LEAVE -> leaveGame(session, username, command);
+                    case RESIGN -> resignGame(session, username, command);
+                }
+            } else {
+                MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
+                username = getUsername(command.getAuthToken());
+                makeMove(session, username, command);
             }
         } catch (Exception ex) {
-
+            ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
+            sendMessage(serverMessage, session);
         }
     }
 
@@ -79,7 +90,7 @@ public class WebSocketHandler {
     private void makeMove(Session session, String username, MakeMoveCommand command) throws InvalidMoveException, IOException {
         try {
             int gameID = command.getGameID();
-            GameData gameData;
+            GameData gameData = gameService.getGame(command.getGameID());
             ChessGame game = gameData.game();
             ChessMove move = command.getMove();
             game.makeMove(move);
@@ -103,8 +114,8 @@ public class WebSocketHandler {
 
     }
 
-    private String getUsername(String authToken) {
-        return "username";
+    private String getUsername(String authToken) throws DataAccessException {
+        return userService.getUsername(authToken);
     }
 
     private void saveSession(int gameID, Session session) {
