@@ -4,6 +4,8 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
+import websocket.commands.MakeMoveCommand;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -115,12 +117,17 @@ public class ServerFacade {
         try {
             drawGame();
         } catch (Exception ex) {
-            throw new Exception("Error highlighting legal moves, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error highlighting legal moves, please try again. " +
+                    "Enter help if assistance is needed.");
         }
     }
 
-    public void makeMove(String... params) throws Exception {
-
+    public void makeMove(int gameID, String... params) throws Exception {
+        try {
+            ws.makeMove(gameID, params);
+        } catch (Exception ex) {
+            throw new Exception("Error making move, please try again. Enter help if assistance is needed.");
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {

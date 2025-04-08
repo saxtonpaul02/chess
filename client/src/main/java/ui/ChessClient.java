@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessGame;
 import ui.websocket.ServerFacade;
 import ui.websocket.ServerMessageObserver;
 import websocket.messages.ServerMessage;
@@ -10,6 +9,7 @@ import java.util.Arrays;
 public class ChessClient implements ServerMessageObserver {
     private String visitorName = null;
     private String visitorAuthToken = null;
+    private int joinedGameID = 0;
     private final ServerFacade server;
     public State state = State.LOGGED_OUT;
 
@@ -94,6 +94,7 @@ public class ChessClient implements ServerMessageObserver {
         assertLoggedIn();
         if (params.length == 2) {
             server.joinGame(visitorAuthToken, params[0], params[1]);
+            joinedGameID = Integer.parseInt(params[0]);
             state = State.GAMEPLAY;
             return String.format("Successfully joined game %s as %s.", params[0], params[1]);
         }
@@ -104,6 +105,7 @@ public class ChessClient implements ServerMessageObserver {
         assertLoggedIn();
         if (params.length == 1) {
             server.observeGame(visitorAuthToken, params[0]);
+            joinedGameID = Integer.parseInt(params[0]);
             state = State.OBSERVATION;
             return String.format("Successfully joined game %s as observer.", params[0]);
         }
@@ -141,7 +143,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String makeMove(String... params) throws Exception {
         if (params.length == 2) {
-            server.makeMove(params);
+            server.makeMove(joinedGameID, params[0], params[1], visitorAuthToken);
             return "";
         }
         throw new Exception("Error making move, please try again.");
@@ -158,6 +160,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String leaveGame() throws Exception {
         try {
+            joinedGameID = 0;
             state = State.LOGGED_IN;
             return "You have left the game.";
         } catch (Exception ex) {

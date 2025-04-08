@@ -6,6 +6,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -63,15 +64,15 @@ public class WebSocketHandler {
         }
     }
 
-    private void makeMove(Session session, String username, UserGameCommand command) {
-
-    }
-
-    private void leaveGame(Session session, String username, UserGameCommand command) {
+    private void makeMove(Session session, String username, MakeMoveCommand command) {
 
     }
 
     private void resignGame(Session session, String username, UserGameCommand command) {
+
+    }
+
+    private void leaveGame(Session session, String username, UserGameCommand command) {
 
     }
 

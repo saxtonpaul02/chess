@@ -68,10 +68,11 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void makeMove(String authToken, String param, ChessMove move) throws Exception {
-        int gameID = Integer.parseInt(param);
+    public void makeMove(int gameID, String... params) throws Exception {
         try {
-            this.session.getBasicRemote().sendText(new Gson().toJson(""));
+            String move = params[0] + params[1];
+            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, params[2], gameID, move);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new Exception("Error: Unable to make move");
         }
