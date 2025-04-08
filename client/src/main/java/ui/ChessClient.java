@@ -3,10 +3,11 @@ package ui;
 import ui.websocket.ServerFacade;
 import ui.websocket.ServerMessageObserver;
 import ui.websocket.WebSocketFacade;
+import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 
-public class ChessClient implements GameHandler {
+public class ChessClient implements ServerMessageObserver {
     private String visitorName = null;
     private String visitorAuthToken = null;
     private final ServerFacade server;
@@ -33,6 +34,11 @@ public class ChessClient implements GameHandler {
                 case "join" -> playGame(params);
                 case "observe" -> observeGame(params);
                 case "logout" -> logout();
+                case "redraw" -> redrawBoard();
+                case "highlight" -> highlightLegalMoves(params);
+                case "move" -> makeMove(params);
+                case "resign" -> resignGame();
+                case "leave" -> leaveGame();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -92,6 +98,7 @@ public class ChessClient implements GameHandler {
         assertLoggedIn();
         if (params.length == 2) {
             server.joinGame(visitorAuthToken, params[0], params[1]);
+            state = State.GAMEPLAY;
             return String.format("Successfully joined game %s as %s.", params[0], params[1]);
         }
         throw new Exception("Error joining game, please try again.");
@@ -101,9 +108,10 @@ public class ChessClient implements GameHandler {
         assertLoggedIn();
         if (params.length == 1) {
             server.observeGame(visitorAuthToken, params[0]);
+            state = State.OBSERVATION;
             return String.format("Successfully joined game %s as observer.", params[0]);
         }
-        throw new Exception("Error getting game, please try again.");
+        throw new Exception("Error observing game, please try again.");
     }
 
     public String logout() throws Exception {
@@ -118,6 +126,49 @@ public class ChessClient implements GameHandler {
         }
     }
 
+    public String redrawBoard() throws Exception {
+        try {
+            server.redrawBoard();
+            return "";
+        } catch (Exception ex) {
+            throw new Exception("Error redrawing board, please try again");
+        }
+    }
+
+    public String highlightLegalMoves(String... params) throws Exception {
+        if (params.length == 1) {
+            server.highlightLegalMoves(params);
+            return "";
+        }
+        throw new Exception("Error highlighting legal moves, please try again.");
+    }
+
+    public String makeMove(String... params) throws Exception {
+        if (params.length == 2) {
+
+            return "";
+        }
+        throw new Exception("Error making move, please try again.");
+    }
+
+    public String resignGame() throws Exception {
+        try {
+
+            return "You have resigned the game.";
+        } catch (Exception ex) {
+            throw new Exception("Error resigning the game, please try again");
+        }
+    }
+
+    public String leaveGame() throws Exception {
+        try {
+            state = State.LOGGED_IN;
+            return "You have left the game.";
+        } catch (Exception ex) {
+            throw new Exception("Error leaving the game, please try again");
+        }
+    }
+
     public String help() {
         if (state == State.LOGGED_OUT) {
             return """
@@ -126,7 +177,7 @@ public class ChessClient implements GameHandler {
                     quit - playing chess
                     help - with possible commands
                     """;
-        } else {
+        } else if (state == State.LOGGED_IN) {
             return """
                     create <NAME> - a game
                     list - games
@@ -136,6 +187,22 @@ public class ChessClient implements GameHandler {
                     quit - playing chess
                     help - with possible commands
                     """;
+        } else if (state == State.GAMEPLAY) {
+            return """
+                    redraw - the board
+                    highlight <STARTING_POSITION> - all legal moves of piece at given position
+                    move <STARTING_POSITION> <ENDING_POSITION> - piece from one place to another
+                    resign - the game
+                    leave - the game
+                    help - with possible commands
+                    """;
+        } else { // state == State.Observation
+            return """
+                    redraw - the board
+                    highlight <STARTING_POSITION> - all legal moves of piece at given position
+                    leave - the game
+                    help - with possible commands
+                    """;
         }
     }
 
@@ -143,5 +210,26 @@ public class ChessClient implements GameHandler {
         if (state == State.LOGGED_OUT) {
             throw new Exception("You must log in");
         }
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification();
+            case ERROR -> displayError();
+            case LOAD_GAME -> loadGame();
+        }
+    }
+
+    private void displayNotification() {
+
+    }
+
+    private void displayError() {
+
+    }
+
+    private void loadGame() {
+
     }
 }

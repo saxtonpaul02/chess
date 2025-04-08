@@ -139,7 +139,7 @@ public class ServerFacade {
         return response;
     }
 
-    private static String drawGame(ChessGame game, boolean flip) {
+    public static String drawGame(ChessGame game, boolean flip) {
         StringBuilder response = new StringBuilder(" \u2003 ");
         for (int i = 0; i < 10; i++) {
             if (i == 0 || i == 9) {

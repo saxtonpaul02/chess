@@ -6,7 +6,7 @@ public class MakeMoveCommand {
 
     private final ChessMove move;
 
-    public MakeMoveCommand(UserGameCommand.CommandType commandType, String authToken, Integer gameID, ChessMove move) {
+    public MakeMoveCommand(UserGameCommand command) {
         this.move = move;
     }
 

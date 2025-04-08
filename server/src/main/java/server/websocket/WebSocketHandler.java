@@ -5,7 +5,6 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 @WebSocket
@@ -22,30 +21,36 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) {
         try {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-            command.getAuthToken()
+            String username = getUsername(command.getAuthToken());
             saveSession(command.getGameID(), session);
             switch (command.getCommandType()) {
-                case CONNECT -> connect(command);
-                case MAKE_MOVE -> makeMove(command);
-                case LEAVE -> leaveGame(command);
-                case RESIGN -> resignGame(command);
+                case CONNECT -> connect(session, username, command);
+                case MAKE_MOVE -> makeMove(session, username, command);
+                case LEAVE -> leaveGame(session, username, command);
+                case RESIGN -> resignGame(session, username, command);
             }
-        } catch () {}
+        } catch (Exception ex) {
+
+        }
     }
 
-    private void connect(UserGameCommand command) {
-
-    }
-
-    private void makeMove(UserGameCommand command) {
-
-    }
-
-    private void leaveGame(UserGameCommand command) {
+    private void connect(Session session, String username, UserGameCommand command) {
 
     }
 
-    private void resignGame(UserGameCommand command) {
+    private void makeMove(Session session, String username, UserGameCommand command) {
+
+    }
+
+    private void leaveGame(Session session, String username, UserGameCommand command) {
+
+    }
+
+    private void resignGame(Session session, String username, UserGameCommand command) {
+
+    }
+
+    private String getUsername(String authToken) {
 
     }
 
@@ -55,11 +60,11 @@ public class WebSocketHandler {
         }
     }
 
-    public void sendMessage(Session session, String message) {
+    private void sendMessage(Session session, String message) {
 
     }
 
-    public void broadcastMessage(String gameID, String message, Session notThisSession) {
+    private void broadcastMessage(String gameID, String message, Session notThisSession) {
 
     }
 }

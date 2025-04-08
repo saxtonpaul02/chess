@@ -9,7 +9,6 @@ import websocket.messages.ServerMessage;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class WebSocketFacade extends Endpoint {
 
@@ -27,15 +26,11 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
-                        messageObserver.updateGame();
-                    } else {
-                        messageObserver.printMessage(serverMessage);
-                    }
+                    messageObserver.notify(serverMessage);
                 }
             });
-        } catch (DeploymentException | IOException | URISyntaxException ex) {
-            throw new Exception("Error");
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
         }
     }
 
@@ -76,8 +71,7 @@ public class WebSocketFacade extends Endpoint {
     public void makeMove(String authToken, String param, ChessMove move) throws Exception {
         int gameID = Integer.parseInt(param);
         try {
-            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
-            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+            this.session.getBasicRemote().sendText(new Gson().toJson(""));
         } catch (IOException ex) {
             throw new Exception("Error: Unable to make move");
         }
