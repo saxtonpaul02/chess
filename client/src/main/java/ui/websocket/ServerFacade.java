@@ -79,7 +79,7 @@ public class ServerFacade {
             JoinRequest joinRequest = new JoinRequest(authToken, teamColor, Integer.parseInt(params[0]));
             this.makeRequest("PUT", path, joinRequest, authToken, ChessGame.class);
             ws = new WebSocketFacade(serverUrl, messageObserver);
-            ws.joinGame(authToken, params[0]);
+            ws.connect(authToken, params[0]);
         } catch (Exception ex) {
             throw new Exception("Error joining game, please try again. Enter help if assistance is needed.");
         }
@@ -88,7 +88,7 @@ public class ServerFacade {
     public void observeGame(String authToken, String... params) throws Exception {
         try {
             ws = new WebSocketFacade(serverUrl, messageObserver);
-            ws.joinGame(authToken, params[0]);
+            ws.connect(authToken, params[0]);
         } catch (Exception ex) {
             throw new Exception("Error observing game, please try again. Enter help if assistance is needed.");
         }
