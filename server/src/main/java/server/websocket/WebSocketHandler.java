@@ -25,6 +25,6 @@ public class WebSocketHandler {
     }
 
     public void broadcastMessage(String gameID, String message, Session notThisSession) {
-        
+
     }
 }

@@ -2,6 +2,7 @@ package ui.websocket;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import ui.GameHandler;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -14,7 +15,7 @@ import java.net.URISyntaxException;
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-    ServerMessageObserver messageObserver;
+    GameHandler gameHandler;
 
     public WebSocketFacade(String url, ServerMessageObserver messageObserver) throws Exception {
         try {
@@ -39,7 +40,7 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinGame(String authToken, String param) throws Exception {
+    public void connect(String authToken, String param) throws Exception {
         int gameID = Integer.parseInt(param);
         try {
             UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
@@ -77,5 +78,13 @@ public class WebSocketFacade extends Endpoint {
         } catch (IOException ex) {
             throw new Exception("Error: Unable to make move");
         }
+    }
+
+    public void onMessage(String message) {
+
+    }
+
+    private void sendMessage() {
+
     }
 }

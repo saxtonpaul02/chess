@@ -6,7 +6,7 @@ import ui.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 
-public class ChessClient {
+public class ChessClient implements GameHandler {
     private String visitorName = null;
     private String visitorAuthToken = null;
     private final ServerFacade server;
