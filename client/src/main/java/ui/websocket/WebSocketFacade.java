@@ -87,7 +87,7 @@ public class WebSocketFacade extends Endpoint {
             int counter = 1;
             for (char c : moveString.toCharArray()) {
                 if (counter % 2 == 1) {
-                    row = switch (c) {
+                    col = switch (c) {
                         case 'a' -> 1;
                         case 'b' -> 2;
                         case 'c' -> 3;
@@ -100,7 +100,7 @@ public class WebSocketFacade extends Endpoint {
                     };
                 } else {
                     if (c >= '1' && c <= '8') {
-                        col = Character.getNumericValue(c);
+                        row = Character.getNumericValue(c);
                     } else {
                         throw new Exception("Error: invalid move entry. Please try again.");
                     }

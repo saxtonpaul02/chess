@@ -2,6 +2,8 @@ package ui.websocket;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
@@ -174,7 +176,7 @@ public class ServerFacade {
                 for (int j = 0; j < 10; j++) {
                     response.append(getLeftColumnBorder(i, j, flip));
                     response.append(getSquareString(i, j, flip));
-                    response.append(getPieceString(i, j, flip));
+                    response.append(getPieceString(i, j, board, flip));
                     response.append(getRightColumnBorder(i, j, flip));
                 }
             }
@@ -240,56 +242,45 @@ public class ServerFacade {
         return square;
     }
 
-    private static String getPieceString(int row, int column, boolean flip) {
+    private static String getPieceString(int row, int column, ChessBoard board, boolean flip) {
         if (column != 0 && column != 9) {
-            if (row > 2 && row < 7) {
+            if (flip) {
+                row = 9 - row;
+                column = 9 - column;
+            }
+            ChessPiece piece = board.getPiece(new ChessPosition(row, column));
+            if (piece == null) {
                 return " \u2003 ";
-            } else if (row == 1 && flip) {
-                return whiteBackRowToString(column);
-            } else if (row == 1 && !flip) {
-                return blackBackRowToString(column);
-            } else if (row == 8 && flip) {
-                return blackBackRowToString(column);
-            } else if (row == 8 && !flip) {
-                return whiteBackRowToString(column);
-            } else if (row == 2 && !flip) {
-                return " ♟ ";
-            } else if (row == 7 && !flip) {
-                return " ♙ ";
-            } else if (row == 7 && flip) {
-                return " ♟ ";
             } else {
-                return " ♙ ";
+                if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                    return whitePiecesToString(piece.getPieceType());
+                } else {
+                    return blackPiecesToString(piece.getPieceType());
+                }
             }
         }
         return "";
     }
 
-    private static String blackBackRowToString(int column) {
-        if (column == 1 || column == 8) {
-            return " ♜ ";
-        } else if (column == 2 || column == 7) {
-            return " ♞ ";
-        } else if (column == 3 || column == 6) {
-            return " ♝ ";
-        } else if (column == 4) {
-            return " ♚ ";
-        } else if (column == 5) {
-            return " ♛ ";
-        } else { return ""; }
+    private static String blackPiecesToString(ChessPiece.PieceType piece) {
+        return switch (piece) {
+            case ROOK -> " ♜ ";
+            case KNIGHT -> " ♞ ";
+            case BISHOP -> " ♝ ";
+            case KING -> " ♚ ";
+            case QUEEN -> " ♛ ";
+            case PAWN -> " ♟ ";
+        };
     }
 
-    private static String whiteBackRowToString(int column) {
-        if (column == 1 || column == 8) {
-            return " ♖ ";
-        } else if (column == 2 || column == 7) {
-            return " ♘ ";
-        } else if (column == 3 || column == 6) {
-            return " ♗ ";
-        } else if (column == 4) {
-            return " ♕ ";
-        } else if (column == 5) {
-            return " ♔ ";
-        } else { return ""; }
+    private static String whitePiecesToString(ChessPiece.PieceType piece) {
+        return switch (piece) {
+            case ROOK -> " ♖ ";
+            case KNIGHT -> " ♘ ";
+            case BISHOP -> " ♗ ";
+            case KING -> " ♔ ";
+            case QUEEN -> " ♕ ";
+            case PAWN -> " ♙ ";
+        };
     }
 }
