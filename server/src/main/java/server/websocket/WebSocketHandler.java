@@ -231,7 +231,11 @@ public class WebSocketHandler {
     private void broadcastNotificationMessage(int gameID, NotificationMessage message, Session notThisSession) throws IOException {
         for (Session session : webSocketSessions.get(gameID)) {
             if (session != notThisSession) {
-                session.getRemote().sendString(new Gson().toJson(message));
+                if (session.isOpen()) {
+                    session.getRemote().sendString(new Gson().toJson(message));
+                } else {
+                    webSocketSessions.remove(gameID, session);
+                }
             }
         }
     }
@@ -239,7 +243,11 @@ public class WebSocketHandler {
     private void broadcastLoadGameMessage(int gameID, LoadGameMessage message, Session notThisSession) throws IOException {
         for (Session session : webSocketSessions.get(gameID)) {
             if (session != notThisSession) {
-                session.getRemote().sendString(new Gson().toJson(message));
+                if (session.isOpen()) {
+                    session.getRemote().sendString(new Gson().toJson(message));
+                } else {
+                    webSocketSessions.remove(gameID, session);
+                }
             }
         }
     }
