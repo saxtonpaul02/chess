@@ -26,6 +26,7 @@ public class Server {
     public Server() {}
 
     public int run(int desiredPort) {
+        Spark.webSocket("/ws", webSocketHandler);
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
         Spark.post("/user", this::register);
@@ -35,7 +36,6 @@ public class Server {
         Spark.put("/game", this::join);
         Spark.get("/game", this::list);
         Spark.delete("/db", this::clear);
-        Spark.webSocket("/ws", webSocketHandler);
         Spark.awaitInitialization();
         return Spark.port();
     }
