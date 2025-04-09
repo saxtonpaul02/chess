@@ -223,16 +223,6 @@ public class ChessClient implements ServerMessageObserver {
         }
     }
 
-    @Override
-    public void loadGame(LoadGameMessage message) {
-        joinedGameData = message.getGame();
-        try {
-            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
-        } catch (Exception ex) {
-            System.out.println("Error loading game, please try again.");
-        }
-    }
-
     private ChessGame.TeamColor getVisitorTeamColor() {
         ChessGame.TeamColor playerColor = null;
         if (joinedGameData.whiteUsername().equals(visitorName)) {
@@ -244,6 +234,16 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     @Override
+    public void loadGame(LoadGameMessage message) {
+        joinedGameData = message.getGame();
+        try {
+            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
+        } catch (Exception ex) {
+            System.out.println("Error loading game, please try again.");
+        }
+    }
+
+    @Override
     public void notify(NotificationMessage message) {
         System.out.println(message.getMessage());
     }
@@ -251,13 +251,5 @@ public class ChessClient implements ServerMessageObserver {
     @Override
     public void notifyError(ErrorMessage message) {
         System.out.println(message.getMessage());
-    }
-
-    private void loadGame() {
-        try {
-            redrawBoard();
-        } catch (Exception ex) {
-            System.out.println("Error loading game, please try redrawing board.");
-        }
     }
 }

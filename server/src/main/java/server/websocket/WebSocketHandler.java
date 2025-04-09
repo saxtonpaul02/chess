@@ -2,9 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
-import chess.InvalidMoveException;
 import com.google.gson.Gson;
-import com.mysql.cj.x.protobuf.Mysqlx;
 import dataaccess.DataAccessException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -21,6 +19,8 @@ import websocket.messages.NotificationMessage;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @WebSocket
 public class WebSocketHandler {
@@ -238,17 +238,27 @@ public class WebSocketHandler {
     }
 
     private void broadcastNotificationMessage(int gameID, NotificationMessage message, Session notThisSession) throws IOException {
-        for (Session session : webSocketSessions.get(gameID)) {
-            if (session != notThisSession) {
-                session.getRemote().sendString(new Gson().toJson(message));
+        HashSet<Session> copy = new HashSet<>(webSocketSessions.get(gameID));
+        for (Session session : copy) {
+            if (session.isOpen()) {
+                if (session != notThisSession) {
+                    session.getRemote().sendString(new Gson().toJson(message));
+                }
+            } else {
+                webSocketSessions.get(gameID).remove(session);
             }
         }
     }
 
     private void broadcastLoadGameMessage(int gameID, LoadGameMessage message, Session notThisSession) throws IOException {
-        for (Session session : webSocketSessions.get(gameID)) {
-            if (session != notThisSession) {
-                session.getRemote().sendString(new Gson().toJson(message));
+        HashSet<Session> copy = new HashSet<>(webSocketSessions.get(gameID));
+        for (Session session : copy) {
+            if (session.isOpen()) {
+                if (session != notThisSession) {
+                    session.getRemote().sendString(new Gson().toJson(message));
+                }
+            } else {
+                webSocketSessions.get(gameID).remove(session);
             }
         }
     }
