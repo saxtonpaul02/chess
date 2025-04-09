@@ -1,15 +1,19 @@
 package ui;
 
+import chess.ChessGame;
+import model.GameData;
 import ui.websocket.ServerFacade;
 import ui.websocket.ServerMessageObserver;
-import websocket.messages.ServerMessage;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 
 import java.util.Arrays;
 
 public class ChessClient implements ServerMessageObserver {
     private String visitorName = null;
     private String visitorAuthToken = null;
-    private int joinedGameID = 0;
+    private GameData joinedGameData;
     private final ServerFacade server;
     public State state = State.LOGGED_OUT;
 
@@ -94,7 +98,6 @@ public class ChessClient implements ServerMessageObserver {
         assertLoggedIn();
         if (params.length == 2) {
             server.joinGame(visitorAuthToken, params[0], params[1]);
-            joinedGameID = Integer.parseInt(params[0]);
             state = State.GAMEPLAY;
             return String.format("Successfully joined game %s as %s.", params[0], params[1]);
         }
@@ -105,7 +108,6 @@ public class ChessClient implements ServerMessageObserver {
         assertLoggedIn();
         if (params.length == 1) {
             server.observeGame(visitorAuthToken, params[0]);
-            joinedGameID = Integer.parseInt(params[0]);
             state = State.OBSERVATION;
             return String.format("Successfully joined game %s as observer.", params[0]);
         }
@@ -126,7 +128,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String redrawBoard() throws Exception {
         try {
-            server.redrawBoard();
+            server.redrawBoard(joinedGameData.game().getBoard());
             return "";
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again");
@@ -135,19 +137,27 @@ public class ChessClient implements ServerMessageObserver {
 
     public String highlightLegalMoves(String... params) throws Exception {
         if (params.length == 1) {
-            server.highlightLegalMoves(params);
+            server.highlightLegalMoves(joinedGameData.game().getBoard(), params);
             return "";
         }
         throw new Exception("Error highlighting legal moves, please try again.");
     }
 
     public String makeMove(String... params) throws Exception {
-        if (params.length == 2) {
-            server.makeMove(joinedGameID, params[0], params[1], visitorAuthToken);
-            return "";
-        } else if (params.length == 3) {
-            server.makeMove(joinedGameID, params[0], params[1], visitorAuthToken, params[2]);
-            return "";
+        ChessGame.TeamColor playerColor = null;
+        if (joinedGameData.whiteUsername().equals(visitorName)) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        } else if (joinedGameData.blackUsername().equals(visitorName)) {
+            playerColor = ChessGame.TeamColor.BLACK;
+        }
+        if (joinedGameData.game().getTeamTurn() == playerColor) {
+            if (params.length == 2) {
+                server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken);
+                return "";
+            } else if (params.length == 3) {
+                server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
+                return "";
+            }
         }
         throw new Exception("Error making move, please try again.");
     }
@@ -163,7 +173,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String leaveGame() throws Exception {
         try {
-            joinedGameID = 0;
+            joinedGameData = null;
             state = State.LOGGED_IN;
             return "You have left the game.";
         } catch (Exception ex) {
@@ -215,19 +225,22 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     @Override
-    public void notify(ServerMessage message) {
-        switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification(message);
-            case ERROR -> displayError(message);
-            case LOAD_GAME -> loadGame();
+    public void loadGame(LoadGameMessage message) {
+        joinedGameData = message.getGame();
+        try {
+            server.redrawBoard(joinedGameData.game().getBoard());
+        } catch (Exception ex) {
+            System.out.println("Error loading game, please try again.");
         }
     }
 
-    private void displayNotification(ServerMessage message) {
+    @Override
+    public void notify(NotificationMessage message) {
         System.out.println(message.getMessage());
     }
 
-    private void displayError(ServerMessage message) {
+    @Override
+    public void notifyError(ErrorMessage message) {
         System.out.println(message.getMessage());
     }
 

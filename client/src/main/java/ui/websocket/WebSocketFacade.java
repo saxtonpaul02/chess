@@ -6,6 +6,9 @@ import chess.ChessPosition;
 import com.google.gson.Gson;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -30,7 +33,18 @@ public class WebSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    messageObserver.notify(serverMessage);
+                    switch (serverMessage.getServerMessageType()) {
+                        case LOAD_GAME -> {
+                            LoadGameMessage loadGameMessage = new Gson().fromJson(message, LoadGameMessage.class);
+                            messageObserver.loadGame(loadGameMessage);
+                        } case NOTIFICATION -> {
+                            NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
+                            messageObserver.notify(notificationMessage);
+                        } case ERROR -> {
+                            ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
+                            messageObserver.notifyError(errorMessage);
+                        }
+                    }
                 }
             });
         } catch (Exception ex) {
@@ -49,16 +63,6 @@ public class WebSocketFacade extends Endpoint {
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new Exception("Error: Unable to connect to game");
-        }
-    }
-
-    public void leaveGame(String authToken, String param) throws Exception {
-        int gameID = Integer.parseInt(param);
-        try {
-            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(command));
-        } catch (IOException ex) {
-            throw new Exception("Error: Unable to leave the game");
         }
     }
 
@@ -112,10 +116,20 @@ public class WebSocketFacade extends Endpoint {
                 promotionPiece = convertStringToPiece(params[3]);
             }
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
-            MakeMoveCommand command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, params[2], gameID, move);
+            MakeMoveCommand command = new MakeMoveCommand(params[2], gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new Exception("Error: Unable to make move.");
+        }
+    }
+
+    public void leaveGame(String authToken, String param) throws Exception {
+        int gameID = Integer.parseInt(param);
+        try {
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to leave the game");
         }
     }
 
@@ -127,9 +141,5 @@ public class WebSocketFacade extends Endpoint {
             case "queen", "q" -> QUEEN;
             default -> throw new Exception("Error: Invalid promotion piece.");
         };
-    }
-
-    private void sendMessage() {
-
     }
 }

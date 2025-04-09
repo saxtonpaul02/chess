@@ -1,5 +1,6 @@
 package ui.websocket;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import request.*;
@@ -105,17 +106,15 @@ public class ServerFacade {
         }
     }
 
-    public void redrawBoard() throws Exception {
+    public void redrawBoard(ChessBoard board) throws Exception {
         try {
-            drawGame();
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.");
         }
     }
 
-    public void highlightLegalMoves(String... params) throws Exception {
+    public void highlightLegalMoves(ChessBoard board, String... params) throws Exception {
         try {
-            drawGame();
         } catch (Exception ex) {
             throw new Exception("Error highlighting legal moves, please try again. " +
                     "Enter help if assistance is needed.");

@@ -16,6 +16,9 @@ import service.GameService;
 import service.UserService;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -40,25 +43,21 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         try {
-            String username;
-            JsonObject json = JsonParser.parseString(message).getAsJsonObject();
-            if (json.get("move").getAsString() == null) {
-                UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-                username = getUsername(command.getAuthToken());
-                saveSession(command.getGameID(), session);
-                switch (command.getCommandType()) {
-                    case CONNECT -> connect(session, username, command);
-                    case LEAVE -> leaveGame(session, username, command);
-                    case RESIGN -> resignGame(session, username, command);
+            UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
+            String username = getUsername(command.getAuthToken());
+            saveSession(command.getGameID(), session);
+            switch (command.getCommandType()) {
+                case CONNECT -> connect(session, username, command);
+                case LEAVE -> leaveGame(session, username, command);
+                case RESIGN -> resignGame(session, username, command);
+                case MAKE_MOVE -> {
+                    MakeMoveCommand moveCommand = new Gson().fromJson(message, MakeMoveCommand.class);
+                    makeMove(session, username, moveCommand);
                 }
-            } else {
-                MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
-                username = getUsername(command.getAuthToken());
-                makeMove(session, username, command);
             }
         } catch (Exception ex) {
-            ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
-            sendMessage(serverMessage, session);
+            ServerMessage errorMessage = new ErrorMessage(ex.getMessage());
+            sendMessage(errorMessage, session);
         }
     }
 
@@ -67,22 +66,20 @@ public class WebSocketHandler {
             int gameID = command.getGameID();
             webSocketSessions.add(gameID, session);
             GameData gameData = gameService.getGame(gameID);
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
-            sendMessage(message, session);
-            broadcastMessage(gameID, message, session);
+            LoadGameMessage message1 = new LoadGameMessage(gameData);
+            sendMessage(message1, session);
+            broadcastMessage(gameID, message1, session);
+            NotificationMessage message2;
             if (username.equals(gameData.whiteUsername())) {
-                message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        String.format("%s has joined the game as white.", username));
+                message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
             } else if (username.equals(gameData.blackUsername())) {
-                message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        String.format("%s has joined the game as black.", username));
+                message2 = new NotificationMessage(String.format("%s has joined the game as black.", username));
             } else {
-                message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                        String.format("%s has joined the game as an observer.", username));
+                message2 = new NotificationMessage(String.format("%s has joined the game as an observer.", username));
             }
-            broadcastMessage(gameID, message, session);
+            broadcastMessage(gameID, message2, session);
         } catch (Exception ex) {
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
+            ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendMessage(message, session);
         }
     }
@@ -94,14 +91,14 @@ public class WebSocketHandler {
             ChessGame game = gameData.game();
             ChessMove move = command.getMove();
             game.makeMove(move);
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
-            sendMessage(message, session);
-            broadcastMessage(gameID, message, session);
-            message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                    String.format("%s has made move %s", username, moveToString(move)));
-            broadcastMessage(gameID, message, session);
+            LoadGameMessage message1 = new LoadGameMessage(gameData);
+            sendMessage(message1, session);
+            broadcastMessage(gameID, message1, session);
+            NotificationMessage message2 =
+                    new NotificationMessage(String.format("%s has made move %s", username, moveToString(move)));
+            broadcastMessage(gameID, message2, session);
         } catch (Exception ex) {
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
+            ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendMessage(message, session);
         }
     }
