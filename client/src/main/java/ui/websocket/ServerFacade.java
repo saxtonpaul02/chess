@@ -130,35 +130,20 @@ public class ServerFacade {
         }
     }
 
-    private ChessPosition stringToPosition(String pos) throws Exception {
-        int row = 0;
-        int col = 0;
-        int counter = 1;
-        ChessPosition position = null;
-        for (char c : pos.toCharArray()) {
-            if (counter % 2 == 1) {
-                col = switch (c) {
-                    case 'h' -> 8;
-                    case 'g' -> 7;
-                    case 'f' -> 6;
-                    case 'e' -> 5;
-                    case 'd' -> 4;
-                    case 'c' -> 3;
-                    case 'b' -> 2;
-                    case 'a' -> 1;
-                    default -> throw new Exception("Error: invalid position entry. Please try again.");
-                };
-            } else {
-                if (c >= '1' && c <= '8') {
-                    row = Character.getNumericValue(c);
-                } else {
-                    throw new Exception("Error: invalid position entry. Please try again.");
-                }
-                position = new ChessPosition(row, col);
-            }
-            counter++;
+    public void resignGame(String authToken, int gameID) throws Exception {
+        try {
+            ws.resignGame(authToken, gameID);
+        } catch (Exception ex) {
+            throw new Exception("Error resigning game, please try again. Enter help if assistance is needed.");
         }
-        return position;
+    }
+
+    public void leaveGame(String authToken, int gameID) throws Exception {
+        try {
+            ws.leaveGame(authToken, gameID);
+        } catch (Exception ex) {
+            throw new Exception("Error leaving game, please try again. Enter help if assistance is needed.");
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
@@ -341,6 +326,37 @@ public class ServerFacade {
             case QUEEN -> " ♕ ";
             case PAWN -> " ♙ ";
         };
+    }
+
+    private ChessPosition stringToPosition(String pos) throws Exception {
+        int row = 0;
+        int col = 0;
+        int counter = 1;
+        ChessPosition position = null;
+        for (char c : pos.toCharArray()) {
+            if (counter % 2 == 1) {
+                col = switch (c) {
+                    case 'h' -> 8;
+                    case 'g' -> 7;
+                    case 'f' -> 6;
+                    case 'e' -> 5;
+                    case 'd' -> 4;
+                    case 'c' -> 3;
+                    case 'b' -> 2;
+                    case 'a' -> 1;
+                    default -> throw new Exception("Error: invalid position entry. Please try again.");
+                };
+            } else {
+                if (c >= '1' && c <= '8') {
+                    row = Character.getNumericValue(c);
+                } else {
+                    throw new Exception("Error: invalid position entry. Please try again.");
+                }
+                position = new ChessPosition(row, col);
+            }
+            counter++;
+        }
+        return position;
     }
 
     private static boolean isPositionAValidMove(Collection<ChessMove> validMoves, ChessPosition position) {

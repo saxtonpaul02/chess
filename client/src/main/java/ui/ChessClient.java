@@ -162,7 +162,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String resignGame() throws Exception {
         try {
-            server.resignGame();
+            server.resignGame(visitorAuthToken, joinedGameData.gameID());
             return "You have resigned the game.";
         } catch (Exception ex) {
             throw new Exception("Error resigning the game, please try again");
@@ -171,7 +171,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String leaveGame() throws Exception {
         try {
-            server.leaveGame();
+            server.leaveGame(visitorAuthToken, joinedGameData.gameID());
             joinedGameData = null;
             state = State.LOGGED_IN;
             return "You have left the game.";

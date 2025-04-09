@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import com.mysql.cj.x.protobuf.Mysqlx;
 import dataaccess.DataAccessException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -34,7 +35,7 @@ public class WebSocketHandler {
 
     @OnWebSocketError
     public void onError(Throwable throwable) {
-        System.out.println("Error: Invalid entry");
+        System.out.println(throwable.getMessage());
     }
 
     @OnWebSocketMessage
@@ -65,7 +66,6 @@ public class WebSocketHandler {
             GameData gameData = gameService.getGame(gameID);
             LoadGameMessage message1 = new LoadGameMessage(gameData);
             sendLoadGameMessage(message1, session);
-            broadcastLoadGameMessage(gameID, message1, session);
             NotificationMessage message2;
             if (username.equals(gameData.whiteUsername())) {
                 message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
@@ -81,7 +81,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void makeMove(Session session, String username, MakeMoveCommand command) throws InvalidMoveException, IOException {
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws IOException {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
@@ -98,14 +98,21 @@ public class WebSocketHandler {
                 String opponent = opponentUsername(gameData);
                 NotificationMessage message3 =
                         new NotificationMessage(String.format("%s has been checkmated", opponent));
+                sendNotificationMessage(message3, session);
                 broadcastNotificationMessage(gameID, message3, session);
                 game.setTeamTurn(null);
             } else if (isinCheck(gameData)) {
                 String opponent = opponentUsername(gameData);
                 NotificationMessage message4 =
                         new NotificationMessage(String.format("%s is in check", opponent));
+                sendNotificationMessage(message4, session);
                 broadcastNotificationMessage(gameID, message4, session);
             } else if (isInStalemate(gameData)) {
+                String opponent = opponentUsername(gameData);
+                NotificationMessage message5 =
+                        new NotificationMessage(String.format("%s has been stalemated", opponent));
+                sendNotificationMessage(message5, session);
+                broadcastNotificationMessage(gameID, message5, session);
                 game.setTeamTurn(null);
             }
         } catch (Exception ex) {
@@ -114,8 +121,19 @@ public class WebSocketHandler {
         }
     }
 
-    private void resignGame(Session session, String username, UserGameCommand command) {
-
+    private void resignGame(Session session, String username, UserGameCommand command) throws IOException {
+        try {
+            int gameID = command.getGameID();
+            GameData gameData = gameService.getGame(command.getGameID());
+            ChessGame game = gameData.game();
+            game.setTeamTurn(null);
+            NotificationMessage message = new NotificationMessage(String.format("%s has resigned the game", username));
+            sendNotificationMessage(message, session);
+            broadcastNotificationMessage(gameID, message, session);
+        } catch (Exception ex) {
+            ErrorMessage message = new ErrorMessage(ex.getMessage());
+            sendErrorMessage(message, session);
+        }
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) {
@@ -182,6 +200,10 @@ public class WebSocketHandler {
             case 8 -> "h";
             default -> "";
         };
+    }
+
+    private void sendNotificationMessage(NotificationMessage message, Session session) throws IOException {
+        session.getRemote().sendString(new Gson().toJson(message));
     }
 
     private void sendLoadGameMessage(LoadGameMessage message, Session session) throws IOException {

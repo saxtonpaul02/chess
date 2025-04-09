@@ -66,16 +66,6 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void resignGame(String authToken, String param) throws Exception {
-        int gameID = Integer.parseInt(param);
-        try {
-            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(command));
-        } catch (IOException ex) {
-            throw new Exception("Error: Unable to resign the game");
-        }
-    }
-
     public void makeMove(int gameID, String... params) throws Exception {
         try {
             String moveString = params[0] + params[1];
@@ -123,8 +113,16 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void leaveGame(String authToken, String param) throws Exception {
-        int gameID = Integer.parseInt(param);
+    public void resignGame(String authToken, int gameID) throws Exception {
+        try {
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new Exception("Error: Unable to resign the game");
+        }
+    }
+
+    public void leaveGame(String authToken, int gameID) throws Exception {
         try {
             UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
