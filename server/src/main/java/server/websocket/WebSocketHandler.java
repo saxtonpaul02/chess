@@ -136,8 +136,22 @@ public class WebSocketHandler {
         }
     }
 
-    private void leaveGame(Session session, String username, UserGameCommand command) {
-
+    private void leaveGame(Session session, String username, UserGameCommand command) throws IOException {
+        try {
+            int gameID = command.getGameID();
+            GameData gameData = gameService.getGame(command.getGameID());
+            if (gameData.whiteUsername().equals(username)) {
+                gameData.setWhiteUsername(null);
+            } else if (gameData.blackUsername().equals(username)) {
+                gameData.setBlackUsername(null);
+            }
+            NotificationMessage message = new NotificationMessage(String.format("%s has left the game", username));
+            broadcastNotificationMessage(gameID, message, session);
+            webSocketSessions.remove(gameID, session);
+        } catch (Exception ex) {
+            ErrorMessage message = new ErrorMessage(ex.getMessage());
+            sendErrorMessage(message, session);
+        }
     }
 
     private String getUsername(String authToken) throws DataAccessException {
