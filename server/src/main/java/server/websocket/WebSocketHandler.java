@@ -17,7 +17,6 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
@@ -100,13 +99,14 @@ public class WebSocketHandler {
                 NotificationMessage message3 =
                         new NotificationMessage(String.format("%s has been checkmated", opponent));
                 broadcastNotificationMessage(gameID, message3, session);
+                game.setTeamTurn(null);
             } else if (isinCheck(gameData)) {
                 String opponent = opponentUsername(gameData);
                 NotificationMessage message4 =
                         new NotificationMessage(String.format("%s is in check", opponent));
                 broadcastNotificationMessage(gameID, message4, session);
             } else if (isInStalemate(gameData)) {
-
+                game.setTeamTurn(null);
             }
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());

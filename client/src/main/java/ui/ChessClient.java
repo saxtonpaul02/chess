@@ -128,8 +128,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String redrawBoard() throws Exception {
         try {
-            server.redrawBoard(joinedGameData.game().getBoard(),
-                    getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
+            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
             return "";
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again");
@@ -155,13 +154,15 @@ public class ChessClient implements ServerMessageObserver {
                 server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
                 return "";
             }
+        } else if (joinedGameData.game().getTeamTurn() == null) {
+            throw new Exception("This game is over, no more moves allowed.");
         }
         throw new Exception("Error making move, please try again.");
     }
 
     public String resignGame() throws Exception {
         try {
-
+            server.resignGame();
             return "You have resigned the game.";
         } catch (Exception ex) {
             throw new Exception("Error resigning the game, please try again");
@@ -170,6 +171,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String leaveGame() throws Exception {
         try {
+            server.leaveGame();
             joinedGameData = null;
             state = State.LOGGED_IN;
             return "You have left the game.";
@@ -225,8 +227,7 @@ public class ChessClient implements ServerMessageObserver {
     public void loadGame(LoadGameMessage message) {
         joinedGameData = message.getGame();
         try {
-            server.redrawBoard(joinedGameData.game().getBoard(),
-                    getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
+            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
         } catch (Exception ex) {
             System.out.println("Error loading game, please try again.");
         }

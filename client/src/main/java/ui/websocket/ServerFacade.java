@@ -1,9 +1,6 @@
 package ui.websocket;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
@@ -13,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
+import java.util.Collection;
 
 public class ServerFacade {
 
@@ -107,9 +105,9 @@ public class ServerFacade {
         }
     }
 
-    public void redrawBoard(ChessBoard board, boolean flip) throws Exception {
+    public void redrawBoard(ChessGame game, boolean flip) throws Exception {
         try {
-            drawGame(board, flip);
+            drawGame(game, flip, null);
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.");
         }
@@ -117,6 +115,7 @@ public class ServerFacade {
 
     public void highlightLegalMoves(ChessGame game, boolean flip, String... params) throws Exception {
         try {
+            drawGame(game, flip, stringToPosition(params[0]));
         } catch (Exception ex) {
             throw new Exception("Error highlighting legal moves, please try again. " +
                     "Enter help if assistance is needed.");
@@ -129,6 +128,37 @@ public class ServerFacade {
         } catch (Exception ex) {
             throw new Exception("Error making move, please try again. Enter help if assistance is needed.");
         }
+    }
+
+    private ChessPosition stringToPosition(String pos) throws Exception {
+        int row = 0;
+        int col = 0;
+        int counter = 1;
+        ChessPosition position = null;
+        for (char c : pos.toCharArray()) {
+            if (counter % 2 == 1) {
+                col = switch (c) {
+                    case 'h' -> 8;
+                    case 'g' -> 7;
+                    case 'f' -> 6;
+                    case 'e' -> 5;
+                    case 'd' -> 4;
+                    case 'c' -> 3;
+                    case 'b' -> 2;
+                    case 'a' -> 1;
+                    default -> throw new Exception("Error: invalid position entry. Please try again.");
+                };
+            } else {
+                if (c >= '1' && c <= '8') {
+                    row = Character.getNumericValue(c);
+                } else {
+                    throw new Exception("Error: invalid position entry. Please try again.");
+                }
+                position = new ChessPosition(row, col);
+            }
+            counter++;
+        }
+        return position;
     }
 
     private <T> T makeRequest(String method, String path, Object request, String authToken, Class<T> responseClass) throws Exception {
@@ -167,7 +197,7 @@ public class ServerFacade {
         return response;
     }
 
-    public static String drawGame(ChessBoard board, boolean flip) {
+    private static String drawGame(ChessGame game, boolean flip, ChessPosition position) {
         StringBuilder response = new StringBuilder(" \u2003 ");
         for (int i = 0; i < 10; i++) {
             if (i == 0 || i == 9) {
@@ -175,8 +205,8 @@ public class ServerFacade {
             } else {
                 for (int j = 0; j < 10; j++) {
                     response.append(getLeftColumnBorder(i, j, flip));
-                    response.append(getSquareString(i, j, flip));
-                    response.append(getPieceString(i, j, board, flip));
+                    response.append(getSquareString(i, j, flip, game, position));
+                    response.append(getPieceString(i, j, game.getBoard(), flip));
                     response.append(getRightColumnBorder(i, j, flip));
                 }
             }
@@ -228,18 +258,47 @@ public class ServerFacade {
         return "";
     }
 
-    private static String getSquareString(int row, int column, boolean flip) {
-        String square = "\u001b[100m";
-        if (!flip) {
-            if ((row + column) % 2 != 0) {
-                square = "\u001b[107m";
+    private static String getSquareString(int row, int column, boolean flip, ChessGame game, ChessPosition position) {
+        if (position == null) {
+            String square = "\u001b[100m";
+            if (!flip) {
+                if ((row + column) % 2 != 0) {
+                    square = "\u001b[107m";
+                }
+            } else {
+                if ((row + column) % 2 == 0) {
+                    square = "\u001b[107m";
+                }
             }
+            return square;
         } else {
-            if ((row + column) % 2 == 0) {
-                square = "\u001b[107m";
+            Collection<ChessMove> validMoves = game.validMoves(position);
+            String square;
+            if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
+                square = "\u001b[44m";
+                if (!flip) {
+                    if ((row + column) % 2 != 0) {
+                        square = "\u001b[104m";
+                    }
+                } else {
+                    if ((row + column) % 2 == 0) {
+                        square = "\u001b[104m";
+                    }
+                }
+            } else {
+                square = "\u001b[100m";
+                if (!flip) {
+                    if ((row + column) % 2 != 0) {
+                        square = "\u001b[107m";
+                    }
+                } else {
+                    if ((row + column) % 2 == 0) {
+                        square = "\u001b[107m";
+                    }
+                }
             }
+            return square;
         }
-        return square;
     }
 
     private static String getPieceString(int row, int column, ChessBoard board, boolean flip) {
@@ -282,5 +341,15 @@ public class ServerFacade {
             case QUEEN -> " ♕ ";
             case PAWN -> " ♙ ";
         };
+    }
+
+    private static boolean isPositionAValidMove(Collection<ChessMove> validMoves, ChessPosition position) {
+        for (ChessMove move : validMoves) {
+            if (move.getEndPosition().getRow() == position.getRow() &&
+                    move.getEndPosition().getColumn() == position.getColumn()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
