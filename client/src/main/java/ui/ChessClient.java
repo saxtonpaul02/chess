@@ -128,7 +128,6 @@ public class ChessClient implements ServerMessageObserver {
 
     public String redrawBoard() throws Exception {
         try {
-
             server.redrawBoard(joinedGameData.game().getBoard(),
                     getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
             return "";

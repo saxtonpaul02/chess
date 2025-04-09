@@ -4,8 +4,6 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import dataaccess.DataAccessException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -56,8 +54,8 @@ public class WebSocketHandler {
                 }
             }
         } catch (Exception ex) {
-            ServerMessage errorMessage = new ErrorMessage(ex.getMessage());
-            sendMessage(errorMessage, session);
+            ErrorMessage errorMessage = new ErrorMessage(ex.getMessage());
+            sendErrorMessage(errorMessage, session);
         }
     }
 
@@ -67,8 +65,8 @@ public class WebSocketHandler {
             webSocketSessions.add(gameID, session);
             GameData gameData = gameService.getGame(gameID);
             LoadGameMessage message1 = new LoadGameMessage(gameData);
-            sendMessage(message1, session);
-            broadcastMessage(gameID, message1, session);
+            sendLoadGameMessage(message1, session);
+            broadcastLoadGameMessage(gameID, message1, session);
             NotificationMessage message2;
             if (username.equals(gameData.whiteUsername())) {
                 message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
@@ -77,10 +75,10 @@ public class WebSocketHandler {
             } else {
                 message2 = new NotificationMessage(String.format("%s has joined the game as an observer.", username));
             }
-            broadcastMessage(gameID, message2, session);
+            broadcastNotificationMessage(gameID, message2, session);
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
-            sendMessage(message, session);
+            sendErrorMessage(message, session);
         }
     }
 
@@ -92,14 +90,27 @@ public class WebSocketHandler {
             ChessMove move = command.getMove();
             game.makeMove(move);
             LoadGameMessage message1 = new LoadGameMessage(gameData);
-            sendMessage(message1, session);
-            broadcastMessage(gameID, message1, session);
+            sendLoadGameMessage(message1, session);
+            broadcastLoadGameMessage(gameID, message1, session);
             NotificationMessage message2 =
                     new NotificationMessage(String.format("%s has made move %s", username, moveToString(move)));
-            broadcastMessage(gameID, message2, session);
+            broadcastNotificationMessage(gameID, message2, session);
+            if (isInCheckmate(gameData)) {
+                String opponent = opponentUsername(gameData);
+                NotificationMessage message3 =
+                        new NotificationMessage(String.format("%s has been checkmated", opponent));
+                broadcastNotificationMessage(gameID, message3, session);
+            } else if (isinCheck(gameData)) {
+                String opponent = opponentUsername(gameData);
+                NotificationMessage message4 =
+                        new NotificationMessage(String.format("%s is in check", opponent));
+                broadcastNotificationMessage(gameID, message4, session);
+            } else if (isInStalemate(gameData)) {
+
+            }
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
-            sendMessage(message, session);
+            sendErrorMessage(message, session);
         }
     }
 
@@ -113,6 +124,30 @@ public class WebSocketHandler {
 
     private String getUsername(String authToken) throws DataAccessException {
         return userService.getUsername(authToken);
+    }
+
+    private String opponentUsername(GameData gameData) {
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        if (teamTurn == ChessGame.TeamColor.WHITE) {
+            return gameData.whiteUsername();
+        } else {
+            return gameData.blackUsername();
+        }
+    }
+
+    private boolean isInCheckmate(GameData gameData) {
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        return gameData.game().isInCheckmate(teamTurn);
+    }
+
+    private boolean isinCheck(GameData gameData) {
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        return gameData.game().isInCheck(teamTurn);
+    }
+
+    private boolean isInStalemate(GameData gameData) {
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        return gameData.game().isInStalemate(teamTurn);
     }
 
     private void saveSession(int gameID, Session session) {
@@ -149,14 +184,26 @@ public class WebSocketHandler {
         };
     }
 
-    private void sendMessage(ServerMessage message, Session session) throws IOException {
-        session.getRemote().sendString(message.getMessage());
+    private void sendLoadGameMessage(LoadGameMessage message, Session session) throws IOException {
+        session.getRemote().sendString(new Gson().toJson(message));
     }
 
-    private void broadcastMessage(int gameID, ServerMessage message, Session notThisSession) throws IOException {
+    private void sendErrorMessage(ErrorMessage message, Session session) throws IOException {
+        session.getRemote().sendString(new Gson().toJson(message));
+    }
+
+    private void broadcastNotificationMessage(int gameID, NotificationMessage message, Session notThisSession) throws IOException {
         for (Session session : webSocketSessions.get(gameID)) {
             if (session != notThisSession) {
-                session.getRemote().sendString(message.getMessage());
+                session.getRemote().sendString(new Gson().toJson(message));
+            }
+        }
+    }
+
+    private void broadcastLoadGameMessage(int gameID, LoadGameMessage message, Session notThisSession) throws IOException {
+        for (Session session : webSocketSessions.get(gameID)) {
+            if (session != notThisSession) {
+                session.getRemote().sendString(new Gson().toJson(message));
             }
         }
     }
