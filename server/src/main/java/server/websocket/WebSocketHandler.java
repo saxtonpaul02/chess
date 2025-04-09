@@ -19,6 +19,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 @WebSocket
@@ -43,15 +44,19 @@ public class WebSocketHandler {
         try {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             String username = getUsername(command.getAuthToken());
-            saveSession(command.getGameID(), session);
-            switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, command);
-                case LEAVE -> leaveGame(session, username, command);
-                case RESIGN -> resignGame(session, username, command);
-                case MAKE_MOVE -> {
-                    MakeMoveCommand moveCommand = new Gson().fromJson(message, MakeMoveCommand.class);
-                    makeMove(session, username, moveCommand);
+            if (username != null) {
+                saveSession(command.getGameID(), session);
+                switch (command.getCommandType()) {
+                    case CONNECT -> connect(session, username, command);
+                    case LEAVE -> leaveGame(session, username, command);
+                    case RESIGN -> resignGame(session, username, command);
+                    case MAKE_MOVE -> {
+                        MakeMoveCommand moveCommand = new Gson().fromJson(message, MakeMoveCommand.class);
+                        makeMove(session, username, moveCommand);
+                    }
                 }
+            } else {
+                throw new Exception("Error: authorization token is invalid");
             }
         } catch (Exception ex) {
             ErrorMessage errorMessage = new ErrorMessage(ex.getMessage());
@@ -64,17 +69,21 @@ public class WebSocketHandler {
             int gameID = command.getGameID();
             webSocketSessions.add(gameID, session);
             GameData gameData = gameService.getGame(gameID);
-            LoadGameMessage message1 = new LoadGameMessage(gameData);
-            sendLoadGameMessage(message1, session);
-            NotificationMessage message2;
-            if (username.equals(gameData.whiteUsername())) {
-                message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
-            } else if (username.equals(gameData.blackUsername())) {
-                message2 = new NotificationMessage(String.format("%s has joined the game as black.", username));
+            if (gameData != null) {
+                LoadGameMessage message1 = new LoadGameMessage(gameData);
+                sendLoadGameMessage(message1, session);
+                NotificationMessage message2;
+                if (username.equals(gameData.whiteUsername())) {
+                    message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
+                } else if (username.equals(gameData.blackUsername())) {
+                    message2 = new NotificationMessage(String.format("%s has joined the game as black.", username));
+                } else {
+                    message2 = new NotificationMessage(String.format("%s has joined the game as an observer.", username));
+                }
+                broadcastNotificationMessage(gameID, message2, session);
             } else {
-                message2 = new NotificationMessage(String.format("%s has joined the game as an observer.", username));
+                throw new Exception("Error: game ID is invalid");
             }
-            broadcastNotificationMessage(gameID, message2, session);
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendErrorMessage(message, session);
@@ -231,11 +240,7 @@ public class WebSocketHandler {
     private void broadcastNotificationMessage(int gameID, NotificationMessage message, Session notThisSession) throws IOException {
         for (Session session : webSocketSessions.get(gameID)) {
             if (session != notThisSession) {
-                if (session.isOpen()) {
-                    session.getRemote().sendString(new Gson().toJson(message));
-                } else {
-                    webSocketSessions.remove(gameID, session);
-                }
+                session.getRemote().sendString(new Gson().toJson(message));
             }
         }
     }
@@ -243,11 +248,7 @@ public class WebSocketHandler {
     private void broadcastLoadGameMessage(int gameID, LoadGameMessage message, Session notThisSession) throws IOException {
         for (Session session : webSocketSessions.get(gameID)) {
             if (session != notThisSession) {
-                if (session.isOpen()) {
-                    session.getRemote().sendString(new Gson().toJson(message));
-                } else {
-                    webSocketSessions.remove(gameID, session);
-                }
+                session.getRemote().sendString(new Gson().toJson(message));
             }
         }
     }

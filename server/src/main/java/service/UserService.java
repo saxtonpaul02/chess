@@ -54,7 +54,10 @@ public class UserService {
     }
 
     public String getUsername(String authToken) throws DataAccessException {
-        return authDao.getAuth(authToken).username();
+        if (authDao.getAuth(authToken) != null) {
+            return authDao.getAuth(authToken).username();
+        }
+        return null;
     }
 
     private boolean verifyPassword(String hashedPassword, String password) {
