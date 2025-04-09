@@ -128,7 +128,9 @@ public class ChessClient implements ServerMessageObserver {
 
     public String redrawBoard() throws Exception {
         try {
-            server.redrawBoard(joinedGameData.game().getBoard());
+
+            server.redrawBoard(joinedGameData.game().getBoard(),
+                    getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
             return "";
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again");
@@ -137,19 +139,15 @@ public class ChessClient implements ServerMessageObserver {
 
     public String highlightLegalMoves(String... params) throws Exception {
         if (params.length == 1) {
-            server.highlightLegalMoves(joinedGameData.game().getBoard(), params);
+            server.highlightLegalMoves(joinedGameData.game(),
+                    getVisitorTeamColor() == ChessGame.TeamColor.BLACK, params);
             return "";
         }
         throw new Exception("Error highlighting legal moves, please try again.");
     }
 
     public String makeMove(String... params) throws Exception {
-        ChessGame.TeamColor playerColor = null;
-        if (joinedGameData.whiteUsername().equals(visitorName)) {
-            playerColor = ChessGame.TeamColor.WHITE;
-        } else if (joinedGameData.blackUsername().equals(visitorName)) {
-            playerColor = ChessGame.TeamColor.BLACK;
-        }
+        ChessGame.TeamColor playerColor = getVisitorTeamColor();
         if (joinedGameData.game().getTeamTurn() == playerColor) {
             if (params.length == 2) {
                 server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken);
@@ -228,10 +226,21 @@ public class ChessClient implements ServerMessageObserver {
     public void loadGame(LoadGameMessage message) {
         joinedGameData = message.getGame();
         try {
-            server.redrawBoard(joinedGameData.game().getBoard());
+            server.redrawBoard(joinedGameData.game().getBoard(),
+                    getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
         } catch (Exception ex) {
             System.out.println("Error loading game, please try again.");
         }
+    }
+
+    private ChessGame.TeamColor getVisitorTeamColor() {
+        ChessGame.TeamColor playerColor = null;
+        if (joinedGameData.whiteUsername().equals(visitorName)) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        } else if (joinedGameData.blackUsername().equals(visitorName)) {
+            playerColor = ChessGame.TeamColor.BLACK;
+        }
+        return playerColor;
     }
 
     @Override

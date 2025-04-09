@@ -5,7 +5,6 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import request.*;
 import result.*;
-import websocket.commands.MakeMoveCommand;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,14 +105,15 @@ public class ServerFacade {
         }
     }
 
-    public void redrawBoard(ChessBoard board) throws Exception {
+    public void redrawBoard(ChessBoard board, boolean flip) throws Exception {
         try {
+            drawGame(board, flip);
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.");
         }
     }
 
-    public void highlightLegalMoves(ChessBoard board, String... params) throws Exception {
+    public void highlightLegalMoves(ChessGame game, boolean flip, String... params) throws Exception {
         try {
         } catch (Exception ex) {
             throw new Exception("Error highlighting legal moves, please try again. " +
@@ -165,7 +165,7 @@ public class ServerFacade {
         return response;
     }
 
-    public static String drawGame(ChessGame game, boolean flip) {
+    public static String drawGame(ChessBoard board, boolean flip) {
         StringBuilder response = new StringBuilder(" \u2003 ");
         for (int i = 0; i < 10; i++) {
             if (i == 0 || i == 9) {
