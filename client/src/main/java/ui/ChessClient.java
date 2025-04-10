@@ -197,7 +197,7 @@ public class ChessClient implements ServerMessageObserver {
             return """
                     redraw - the board
                     highlight <STARTING_POSITION> - all legal moves of piece at given position
-                    move <STARTING_POSITION> <ENDING_POSITION> <PROMOTION_PIECE> - piece from one place to another with piece to promote to, if applicable
+                    move <STARTING_POSITION> <ENDING_POSITION> <PROMOTION_PIECE> - piece from one place to another (with piece to promote to)
                     resign - the game
                     leave - the game
                     help - with possible commands

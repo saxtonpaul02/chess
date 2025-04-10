@@ -73,7 +73,7 @@ public class GameService {
 
     public void updateGame(GameData gameData, String authToken, ChessGame.TeamColor playerColor) throws DataAccessException {
         AuthData authData = null;
-        if (authToken != null) authData = authDao.getAuth(authToken);
+        if (authToken != null) { authData = authDao.getAuth(authToken); }
         gameDao.updateGame(gameData, authData, playerColor);
     }
 }

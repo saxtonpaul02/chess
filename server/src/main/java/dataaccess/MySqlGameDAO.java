@@ -65,8 +65,8 @@ public class MySqlGameDAO implements GameDAO {
     public int updateGame(GameData gameData, AuthData authData,
                            ChessGame.TeamColor playerColor) throws DataAccessException {
         String username;
-        if (authData == null) username = null;
-        else username = authData.username();
+        if (authData == null) { username = null; }
+        else { username = authData.username(); }
         int id = gameData.gameID();
         String statement;
         if (playerColor == ChessGame.TeamColor.WHITE) {

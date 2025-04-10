@@ -279,12 +279,12 @@ public class WebSocketHandler {
     private void broadcastNotificationMessage(int gameID, NotificationMessage message, Session notThisSession) throws IOException {
         HashSet<Session> copy = new HashSet<>(webSocketSessions.get(gameID));
         for (Session session : copy) {
-            if (session.isOpen()) {
-                if (session != notThisSession) {
+            if (session != notThisSession) {
+                if (session.isOpen()) {
                     session.getRemote().sendString(new Gson().toJson(message));
+                } else {
+                    webSocketSessions.get(gameID).remove(session);
                 }
-            } else {
-                webSocketSessions.get(gameID).remove(session);
             }
         }
     }
