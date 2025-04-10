@@ -20,6 +20,8 @@ import websocket.messages.NotificationMessage;
 import java.io.IOException;
 import java.util.HashSet;
 
+import static chess.ChessGame.TeamColor.*;
+
 @WebSocket
 public class WebSocketHandler {
 
@@ -92,10 +94,9 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
-            System.out.println(gameData.game().getTeamTurn().toString());
-            if (gameData.game().getTeamTurn() == null) {
+            if (gameData.game().getCurrentTurn() == GAME_OVER) {
                 throw new Exception("Error: This game is over. No more moves allowed.");
-            } else if (getRootClientTeam(gameData, username) != gameData.game().getTeamTurn()) {
+            } else if (getRootClientTeam(gameData, username) != gameData.game().getCurrentTurn()) {
                 throw new Exception("Error: It is not your turn.");
             }
             ChessGame game = gameData.game();
@@ -110,9 +111,6 @@ public class WebSocketHandler {
             } else {
                 throw new Exception("Error: Invalid move.");
             }
-            System.out.println(gameData.game().getTeamTurn().toString());
-            gameService.updateGame(gameData, command.getAuthToken());
-            System.out.println(gameService.getGame(gameID).game().getTeamTurn().toString());
             LoadGameMessage message1 = new LoadGameMessage(gameData);
             sendLoadGameMessage(message1, session);
             broadcastLoadGameMessage(gameID, message1, session);
@@ -125,7 +123,7 @@ public class WebSocketHandler {
                         new NotificationMessage(String.format("%s has been checkmated", opponent));
                 sendNotificationMessage(message3, session);
                 broadcastNotificationMessage(gameID, message3, session);
-                game.setTeamTurn(null);
+                game.setCurrentTurn(GAME_OVER);
             } else if (isinCheck(gameData)) {
                 String opponent = opponentUsername(gameData);
                 NotificationMessage message4 =
@@ -138,8 +136,9 @@ public class WebSocketHandler {
                         new NotificationMessage(String.format("%s has been stalemated", opponent));
                 sendNotificationMessage(message5, session);
                 broadcastNotificationMessage(gameID, message5, session);
-                game.setTeamTurn(null);
+                game.setCurrentTurn(GAME_OVER);
             }
+            gameService.updateGame(gameData, null, null);
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendErrorMessage(message, session);
@@ -153,13 +152,14 @@ public class WebSocketHandler {
             ChessGame game = gameData.game();
             if (getRootClientTeam(gameData, username) == null) {
                 throw new Exception("Error: observer cannot resign the game.");
-            } else if (game.getTeamTurn() == null) {
+            } else if (game.getCurrentTurn() == GAME_OVER) {
                 throw new Exception("Error: this game is already over.");
             }
-            game.setTeamTurn(null);
+            game.setCurrentTurn(GAME_OVER);
             NotificationMessage message = new NotificationMessage(String.format("%s has resigned the game", username));
             sendNotificationMessage(message, session);
             broadcastNotificationMessage(gameID, message, session);
+            gameService.updateGame(gameData, null, GAME_OVER);
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendErrorMessage(message, session);
@@ -172,8 +172,10 @@ public class WebSocketHandler {
             GameData gameData = gameService.getGame(command.getGameID());
             if (gameData.whiteUsername().equals(username)) {
                 gameData.setWhiteUsername(null);
+                gameService.updateGame(gameData, null, WHITE);
             } else if (gameData.blackUsername().equals(username)) {
                 gameData.setBlackUsername(null);
+                gameService.updateGame(gameData, null, BLACK);
             }
             NotificationMessage message = new NotificationMessage(String.format("%s has left the game", username));
             broadcastNotificationMessage(gameID, message, session);
@@ -190,7 +192,7 @@ public class WebSocketHandler {
 
     private ChessGame.TeamColor getRootClientTeam(GameData gameData, String username) {
         if (gameData.whiteUsername().equals(username)) {
-            return ChessGame.TeamColor.WHITE;
+            return WHITE;
         } else if (gameData.blackUsername().equals(username)) {
             return ChessGame.TeamColor.BLACK;
         } else {
@@ -199,8 +201,8 @@ public class WebSocketHandler {
     }
 
     private String opponentUsername(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
-        if (teamTurn == ChessGame.TeamColor.WHITE) {
+        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
+        if (teamTurn == WHITE) {
             return gameData.whiteUsername();
         } else {
             return gameData.blackUsername();
@@ -208,17 +210,17 @@ public class WebSocketHandler {
     }
 
     private boolean isInCheckmate(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
         return gameData.game().isInCheckmate(teamTurn);
     }
 
     private boolean isinCheck(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
         return gameData.game().isInCheck(teamTurn);
     }
 
     private boolean isInStalemate(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
         return gameData.game().isInStalemate(teamTurn);
     }
 
