@@ -71,7 +71,7 @@ public class WebSocketFacade extends Endpoint {
             String moveString = params[0] + params[1];
             ChessPosition startPosition = null;
             ChessPosition endPosition = null;
-            ChessPiece.PieceType promotionPiece = null;
+            ChessPiece.PieceType promotionPiece = convertStringToPiece(params[3]);
             int row = 0;
             int col = 0;
             int counter = 1;
@@ -101,9 +101,6 @@ public class WebSocketFacade extends Endpoint {
                     }
                 }
                 counter++;
-            }
-            if (params.length == 4) {
-                promotionPiece = convertStringToPiece(params[3]);
             }
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             MakeMoveCommand command = new MakeMoveCommand(params[2], gameID, move);
@@ -137,6 +134,7 @@ public class WebSocketFacade extends Endpoint {
             case "bishop", "b" -> BISHOP;
             case "rook", "r" -> ROOK;
             case "queen", "q" -> QUEEN;
+            case "" -> null;
             default -> throw new Exception("Error: Invalid promotion piece.");
         };
     }

@@ -94,9 +94,23 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
+            if (gameData.game().getTeamTurn() == null) {
+                throw new Exception("Error: This game is over. No more moves allowed.");
+            } else if (getRootClientTeam(gameData, username) != gameData.game().getTeamTurn()) {
+                throw new Exception("Error: It is not your turn.");
+            }
             ChessGame game = gameData.game();
             ChessMove move = command.getMove();
-            game.makeMove(move);
+            if (game.getBoard().getPiece(move.getStartPosition()).getTeamColor()
+                    == getRootClientTeam(gameData, username)) {
+                if (game.validMoves(move.getStartPosition()).contains(move)) {
+                    game.makeMove(move);
+                } else {
+                    throw new Exception("Error: Invalid move.");
+                }
+            } else {
+                throw new Exception("Error: Invalid move.");
+            }
             LoadGameMessage message1 = new LoadGameMessage(gameData);
             sendLoadGameMessage(message1, session);
             broadcastLoadGameMessage(gameID, message1, session);
@@ -165,6 +179,14 @@ public class WebSocketHandler {
 
     private String getUsername(String authToken) throws DataAccessException {
         return userService.getUsername(authToken);
+    }
+
+    private ChessGame.TeamColor getRootClientTeam(GameData gameData, String username) {
+        if (gameData.whiteUsername().equals(username)) {
+            return ChessGame.TeamColor.WHITE;
+        } else {
+            return ChessGame.TeamColor.BLACK;
+        }
     }
 
     private String opponentUsername(GameData gameData) {

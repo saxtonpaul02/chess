@@ -145,17 +145,12 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     public String makeMove(String... params) throws Exception {
-        ChessGame.TeamColor playerColor = getVisitorTeamColor();
-        if (joinedGameData.game().getTeamTurn() == playerColor) {
-            if (params.length == 2) {
-                server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken);
-                return "";
-            } else if (params.length == 3) {
-                server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
-                return "";
-            }
-        } else if (joinedGameData.game().getTeamTurn() == null) {
-            throw new Exception("This game is over, no more moves allowed.");
+        if (params.length == 2) {
+            server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, "");
+            return "";
+        } else if (params.length == 3) {
+            server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
+            return "";
         }
         throw new Exception("Error making move, please try again.");
     }
