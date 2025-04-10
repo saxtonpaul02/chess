@@ -170,12 +170,17 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
-            if (gameData.whiteUsername().equals(username)) {
-                gameData.setWhiteUsername(null);
-                gameService.updateGame(gameData, null, WHITE);
-            } else if (gameData.blackUsername().equals(username)) {
-                gameData.setBlackUsername(null);
-                gameService.updateGame(gameData, null, BLACK);
+            if (gameData.whiteUsername() != null) {
+                if (gameData.whiteUsername().equals(username)) {
+                    gameData.setWhiteUsername(null);
+                    gameService.updateGame(gameData, null, WHITE);
+                }
+            }
+            if (gameData.blackUsername() != null) {
+                if (gameData.blackUsername().equals(username)) {
+                    gameData.setBlackUsername(null);
+                    gameService.updateGame(gameData, null, BLACK);
+                }
             }
             NotificationMessage message = new NotificationMessage(String.format("%s has left the game", username));
             broadcastNotificationMessage(gameID, message, session);
