@@ -17,8 +17,8 @@ public class ChessClient implements ServerMessageObserver {
     private final ServerFacade server;
     public State state = State.LOGGED_OUT;
 
-    public ChessClient(String serverUrl, ServerMessageObserver messageObserver) {
-        server = new ServerFacade(serverUrl, messageObserver);
+    public ChessClient(String serverUrl) {
+        server = new ServerFacade(serverUrl, this);
     }
 
     public String eval(String input) {
@@ -52,9 +52,9 @@ public class ChessClient implements ServerMessageObserver {
             visitorAuthToken = server.register(params);
             state = State.LOGGED_IN;
             visitorName = params[0];
-            return String.format("Logged in as %s.", visitorName);
+            return String.format("Logged in as %s.\n", visitorName);
         }
-        throw new Exception("Error registering, please try again.");
+        throw new Exception("Error registering, please try again.\n");
     }
 
     public String login(String... params) throws Exception {
@@ -62,18 +62,18 @@ public class ChessClient implements ServerMessageObserver {
             visitorAuthToken = server.login(params);
             state = State.LOGGED_IN;
             visitorName = params[0];
-            return String.format("Logged in as %s.", visitorName);
+            return String.format("Logged in as %s.\n", visitorName);
         }
-        throw new Exception("Error logging in, please try again.");
+        throw new Exception("Error logging in, please try again.\n");
     }
 
     public String createGame(String... params) throws Exception {
         assertLoggedIn();
         if (params.length == 1) {
             server.createGame(visitorAuthToken, params);
-            return String.format("Successfully created game %s.", params[0]);
+            return String.format("Successfully created game %s.\n", params[0]);
         }
-        throw new Exception("Error creating game, please try again.");
+        throw new Exception("Error creating game, please try again.\n");
     }
 
     public String listGames() throws Exception {
@@ -90,7 +90,7 @@ public class ChessClient implements ServerMessageObserver {
             }
             return result.toString();
         } catch (Exception ex) {
-            throw new Exception("Error listing games, please try again.");
+            throw new Exception("Error listing games, please try again.\n");
         }
     }
 
@@ -99,9 +99,9 @@ public class ChessClient implements ServerMessageObserver {
         if (params.length == 2) {
             server.joinGame(visitorAuthToken, params[0], params[1]);
             state = State.GAMEPLAY;
-            return String.format("Successfully joined game %s as %s.", params[0], params[1]);
+            return String.format("Successfully joined game %s as %s.\n", params[0], params[1]);
         }
-        throw new Exception("Error joining game, please try again.");
+        throw new Exception("Error joining game, please try again.\n");
     }
 
     public String observeGame(String... params) throws Exception {
@@ -109,9 +109,9 @@ public class ChessClient implements ServerMessageObserver {
         if (params.length == 1) {
             server.observeGame(visitorAuthToken, params[0]);
             state = State.OBSERVATION;
-            return String.format("Successfully joined game %s as observer.", params[0]);
+            return String.format("Successfully joined game %s as observer.\n", params[0]);
         }
-        throw new Exception("Error observing game, please try again.");
+        throw new Exception("Error observing game, please try again.\n");
     }
 
     public String logout() throws Exception {
@@ -120,18 +120,18 @@ public class ChessClient implements ServerMessageObserver {
             server.logout(visitorAuthToken);
             state = State.LOGGED_OUT;
             visitorName = null;
-            return "Successfully logged out.";
+            return "Successfully logged out.\n";
         } catch (Exception ex) {
-            throw new Exception("Error logging out, please try again");
+            throw new Exception("Error logging out, please try again.\n");
         }
     }
 
     public String redrawBoard() throws Exception {
         try {
             server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
-            return "";
+            return "\n";
         } catch (Exception ex) {
-            throw new Exception("Error redrawing board, please try again");
+            throw new Exception("Error redrawing board, please try again.\n");
         }
     }
 
@@ -139,28 +139,28 @@ public class ChessClient implements ServerMessageObserver {
         if (params.length == 1) {
             server.highlightLegalMoves(joinedGameData.game(),
                     getVisitorTeamColor() == ChessGame.TeamColor.BLACK, params);
-            return "";
+            return "\n";
         }
-        throw new Exception("Error highlighting legal moves, please try again.");
+        throw new Exception("Error highlighting legal moves, please try again.\n");
     }
 
     public String makeMove(String... params) throws Exception {
         if (params.length == 2) {
             server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, "");
-            return "";
+            return "\n";
         } else if (params.length == 3) {
             server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
-            return "";
+            return "\n";
         }
-        throw new Exception("Error making move, please try again.");
+        throw new Exception("Error making move, please try again.\n");
     }
 
     public String resignGame() throws Exception {
         try {
             server.resignGame(visitorAuthToken, joinedGameData.gameID());
-            return "You have resigned the game.";
+            return "You have resigned the game.\n";
         } catch (Exception ex) {
-            throw new Exception("Error resigning the game, please try again");
+            throw new Exception("Error resigning the game, please try again\n");
         }
     }
 
@@ -169,9 +169,9 @@ public class ChessClient implements ServerMessageObserver {
             server.leaveGame(visitorAuthToken, joinedGameData.gameID());
             joinedGameData = null;
             state = State.LOGGED_IN;
-            return "You have left the game.";
+            return "You have left the game.\n";
         } catch (Exception ex) {
-            throw new Exception("Error leaving the game, please try again");
+            throw new Exception("Error leaving the game, please try again\n");
         }
     }
 
@@ -230,11 +230,11 @@ public class ChessClient implements ServerMessageObserver {
 
     @Override
     public void loadGame(LoadGameMessage message) {
-        System.out.println(joinedGameData.game().getTeamTurn().toString());
+        joinedGameData = message.getGame();
         try {
-            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
+            redrawBoard();
         } catch (Exception ex) {
-            System.out.println("Error loading game, please try again.");
+            System.out.println("Error loading game, please try again.\n");
         }
     }
 

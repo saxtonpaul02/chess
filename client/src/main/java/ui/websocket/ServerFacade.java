@@ -21,7 +21,14 @@ public class ServerFacade {
     public ServerFacade(String serverUrl, ServerMessageObserver messageObserver) {
         this.serverUrl = serverUrl;
         this.messageObserver = messageObserver;
+        try {
+            ws = new WebSocketFacade(this.serverUrl, this.messageObserver);
+        } catch (Exception ex) {
+            System.out.println("Error: Websocket issues");
+        }
     }
+
+
 
     public String register(String... params) throws Exception {
         try {
