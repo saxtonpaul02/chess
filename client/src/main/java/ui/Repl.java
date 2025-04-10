@@ -13,6 +13,8 @@ public class Repl {
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
+            try { Thread.sleep(1000); }
+            catch (InterruptedException ex) { System.out.println("Error waiting for websocket."); }
             printPrompt();
             String line = scanner.nextLine();
             try {

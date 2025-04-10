@@ -24,7 +24,7 @@ public class ServerFacade {
         try {
             ws = new WebSocketFacade(this.serverUrl, this.messageObserver);
         } catch (Exception ex) {
-            System.out.println("Error: Websocket issues");
+            System.out.println("Error: Websocket issues.\n");
         }
     }
 
@@ -37,7 +37,7 @@ public class ServerFacade {
             RegisterResult registerResult = this.makeRequest("POST", path, registerRequest, null, RegisterResult.class);
             return registerResult.authToken();
         } catch (Exception ex) {
-            throw new Exception("Error registering, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error registering, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -48,7 +48,7 @@ public class ServerFacade {
             LoginResult loginResult = this.makeRequest("POST", path, loginRequest, null, LoginResult.class);
             return loginResult.authToken();
         } catch (Exception ex) {
-            throw new Exception("Error logging in, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error logging in, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -58,7 +58,7 @@ public class ServerFacade {
             CreateRequest createRequest = new CreateRequest(authToken, params[0]);
             this.makeRequest("POST", path, createRequest, authToken, ChessGame.class);
         } catch (Exception ex) {
-            throw new Exception("Error creating game, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error creating game, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -70,7 +70,7 @@ public class ServerFacade {
             ListResultList lrl = this.makeRequest("GET", path, null, authToken, ListResultList.class);
             return lrl.games();
         } catch (Exception ex) {
-            throw new Exception("Error listing games, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error listing games, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -90,7 +90,7 @@ public class ServerFacade {
             ws = new WebSocketFacade(serverUrl, messageObserver);
             ws.connect(authToken, params[0]);
         } catch (Exception ex) {
-            throw new Exception("Error joining game, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error joining game, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -99,7 +99,7 @@ public class ServerFacade {
             ws = new WebSocketFacade(serverUrl, messageObserver);
             ws.connect(authToken, params[0]);
         } catch (Exception ex) {
-            throw new Exception("Error observing game, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error observing game, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -108,24 +108,24 @@ public class ServerFacade {
             var path = "/session";
             this.makeRequest("DELETE", path, null, authToken, null);
         } catch (Exception ex) {
-            throw new Exception("Error logging out, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error logging out, please try again. Enter help if assistance is needed.\n");
         }
     }
 
-    public void redrawBoard(ChessGame game, boolean flip) throws Exception {
+    public String redrawBoard(ChessGame game, boolean flip) throws Exception {
         try {
-            drawGame(game, flip, null);
+            return drawGame(game, flip, null);
         } catch (Exception ex) {
-            throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error redrawing board, please try again. Enter help if assistance is needed.\n");
         }
     }
 
-    public void highlightLegalMoves(ChessGame game, boolean flip, String... params) throws Exception {
+    public String highlightLegalMoves(ChessGame game, boolean flip, String... params) throws Exception {
         try {
-            drawGame(game, flip, stringToPosition(params[0]));
+            return drawGame(game, flip, stringToPosition(params[0]));
         } catch (Exception ex) {
             throw new Exception("Error highlighting legal moves, please try again. " +
-                    "Enter help if assistance is needed.");
+                    "Enter help if assistance is needed.\n");
         }
     }
 
@@ -133,7 +133,7 @@ public class ServerFacade {
         try {
             ws.makeMove(gameID, params);
         } catch (Exception ex) {
-            throw new Exception("Error making move, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error making move, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -141,7 +141,7 @@ public class ServerFacade {
         try {
             ws.resignGame(authToken, gameID);
         } catch (Exception ex) {
-            throw new Exception("Error resigning game, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error resigning game, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -149,7 +149,7 @@ public class ServerFacade {
         try {
             ws.leaveGame(authToken, gameID);
         } catch (Exception ex) {
-            throw new Exception("Error leaving game, please try again. Enter help if assistance is needed.");
+            throw new Exception("Error leaving game, please try again. Enter help if assistance is needed.\n");
         }
     }
 
@@ -197,7 +197,7 @@ public class ServerFacade {
             } else {
                 for (int j = 0; j < 10; j++) {
                     response.append(getLeftColumnBorder(i, j, flip));
-                    response.append(getSquareString(i, j, flip, game, position));
+                    response.append(getSquareString(9-i, j, flip, game, position));
                     response.append(getPieceString(i, j, game.getBoard(), flip));
                     response.append(getRightColumnBorder(i, j, flip));
                 }
@@ -296,8 +296,9 @@ public class ServerFacade {
     private static String getPieceString(int row, int column, ChessBoard board, boolean flip) {
         if (column != 0 && column != 9) {
             if (flip) {
-                row = 9 - row;
                 column = 9 - column;
+            } else {
+                row = 9 - row;
             }
             ChessPiece piece = board.getPiece(new ChessPosition(row, column));
             if (piece == null) {

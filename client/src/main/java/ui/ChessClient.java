@@ -128,8 +128,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public String redrawBoard() throws Exception {
         try {
-            server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
-            return "\n";
+            return server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
         } catch (Exception ex) {
             throw new Exception("Error redrawing board, please try again.\n");
         }
@@ -137,9 +136,8 @@ public class ChessClient implements ServerMessageObserver {
 
     public String highlightLegalMoves(String... params) throws Exception {
         if (params.length == 1) {
-            server.highlightLegalMoves(joinedGameData.game(),
+            return server.highlightLegalMoves(joinedGameData.game(),
                     getVisitorTeamColor() == ChessGame.TeamColor.BLACK, params);
-            return "\n";
         }
         throw new Exception("Error highlighting legal moves, please try again.\n");
     }
@@ -147,10 +145,10 @@ public class ChessClient implements ServerMessageObserver {
     public String makeMove(String... params) throws Exception {
         if (params.length == 2) {
             server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, "");
-            return "\n";
+            return "";
         } else if (params.length == 3) {
             server.makeMove(joinedGameData.gameID(), params[0], params[1], visitorAuthToken, params[2]);
-            return "\n";
+            return "";
         }
         throw new Exception("Error making move, please try again.\n");
     }
@@ -158,9 +156,9 @@ public class ChessClient implements ServerMessageObserver {
     public String resignGame() throws Exception {
         try {
             server.resignGame(visitorAuthToken, joinedGameData.gameID());
-            return "You have resigned the game.\n";
+            return "\n";
         } catch (Exception ex) {
-            throw new Exception("Error resigning the game, please try again\n");
+            throw new Exception("Error resigning the game, please try again.\n");
         }
     }
 
@@ -220,10 +218,15 @@ public class ChessClient implements ServerMessageObserver {
 
     private ChessGame.TeamColor getVisitorTeamColor() {
         ChessGame.TeamColor playerColor = null;
-        if (joinedGameData.whiteUsername().equals(visitorName)) {
-            playerColor = ChessGame.TeamColor.WHITE;
-        } else if (joinedGameData.blackUsername().equals(visitorName)) {
-            playerColor = ChessGame.TeamColor.BLACK;
+        if (joinedGameData.whiteUsername() != null) {
+            if (joinedGameData.whiteUsername().equals(visitorName)) {
+                playerColor = ChessGame.TeamColor.WHITE;
+            }
+        }
+        if (joinedGameData.blackUsername() != null) {
+            if (joinedGameData.blackUsername().equals(visitorName)) {
+                playerColor = ChessGame.TeamColor.BLACK;
+            }
         }
         return playerColor;
     }
@@ -232,9 +235,9 @@ public class ChessClient implements ServerMessageObserver {
     public void loadGame(LoadGameMessage message) {
         joinedGameData = message.getGame();
         try {
-            redrawBoard();
+            System.out.println(redrawBoard());
         } catch (Exception ex) {
-            System.out.println("Error loading game, please try again.\n");
+            System.out.println("Error loading game, please try again.");
         }
     }
 

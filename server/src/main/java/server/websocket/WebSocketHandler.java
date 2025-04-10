@@ -72,13 +72,17 @@ public class WebSocketHandler {
             if (gameData != null) {
                 LoadGameMessage message1 = new LoadGameMessage(gameData);
                 sendLoadGameMessage(message1, session);
-                NotificationMessage message2;
-                if (username.equals(gameData.whiteUsername())) {
-                    message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
-                } else if (username.equals(gameData.blackUsername())) {
-                    message2 = new NotificationMessage(String.format("%s has joined the game as black.", username));
-                } else {
-                    message2 = new NotificationMessage(String.format("%s has joined the game as an observer.", username));
+                NotificationMessage message2 = new NotificationMessage(
+                        String.format("%s has joined the game as an observer.", username));
+                if (gameData.whiteUsername() != null) {
+                    if (username.equals(gameData.whiteUsername())) {
+                        message2 = new NotificationMessage(String.format("%s has joined the game as white.", username));
+                    }
+                }
+                if (gameData.blackUsername() != null) {
+                    if (username.equals(gameData.blackUsername())) {
+                        message2 = new NotificationMessage(String.format("%s has joined the game as black.", username));
+                    }
                 }
                 broadcastNotificationMessage(gameID, message2, session);
             } else {
@@ -196,13 +200,17 @@ public class WebSocketHandler {
     }
 
     private ChessGame.TeamColor getRootClientTeam(GameData gameData, String username) {
-        if (gameData.whiteUsername().equals(username)) {
-            return WHITE;
-        } else if (gameData.blackUsername().equals(username)) {
-            return ChessGame.TeamColor.BLACK;
-        } else {
-            return null;
+        if (gameData.whiteUsername() != null) {
+            if (gameData.whiteUsername().equals(username)) {
+                return WHITE;
+            }
         }
+        if (gameData.blackUsername() != null) {
+            if (gameData.blackUsername().equals(username)) {
+                return ChessGame.TeamColor.BLACK;
+            }
+        }
+        return null;
     }
 
     private String opponentUsername(GameData gameData) {
