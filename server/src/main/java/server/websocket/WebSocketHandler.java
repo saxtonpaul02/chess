@@ -17,9 +17,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 
 @WebSocket
@@ -94,6 +92,7 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
+            System.out.println(gameData.game().getTeamTurn().toString());
             if (gameData.game().getTeamTurn() == null) {
                 throw new Exception("Error: This game is over. No more moves allowed.");
             } else if (getRootClientTeam(gameData, username) != gameData.game().getTeamTurn()) {
@@ -111,6 +110,9 @@ public class WebSocketHandler {
             } else {
                 throw new Exception("Error: Invalid move.");
             }
+            System.out.println(gameData.game().getTeamTurn().toString());
+            gameService.updateGame(gameData, command.getAuthToken());
+            System.out.println(gameService.getGame(gameID).game().getTeamTurn().toString());
             LoadGameMessage message1 = new LoadGameMessage(gameData);
             sendLoadGameMessage(message1, session);
             broadcastLoadGameMessage(gameID, message1, session);
@@ -149,6 +151,11 @@ public class WebSocketHandler {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
             ChessGame game = gameData.game();
+            if (getRootClientTeam(gameData, username) == null) {
+                throw new Exception("Error: observer cannot resign the game.");
+            } else if (game.getTeamTurn() == null) {
+                throw new Exception("Error: this game is already over.");
+            }
             game.setTeamTurn(null);
             NotificationMessage message = new NotificationMessage(String.format("%s has resigned the game", username));
             sendNotificationMessage(message, session);
@@ -170,7 +177,7 @@ public class WebSocketHandler {
             }
             NotificationMessage message = new NotificationMessage(String.format("%s has left the game", username));
             broadcastNotificationMessage(gameID, message, session);
-            webSocketSessions.remove(gameID, session);
+            webSocketSessions.get(gameID).remove(session);
         } catch (Exception ex) {
             ErrorMessage message = new ErrorMessage(ex.getMessage());
             sendErrorMessage(message, session);
@@ -184,8 +191,10 @@ public class WebSocketHandler {
     private ChessGame.TeamColor getRootClientTeam(GameData gameData, String username) {
         if (gameData.whiteUsername().equals(username)) {
             return ChessGame.TeamColor.WHITE;
-        } else {
+        } else if (gameData.blackUsername().equals(username)) {
             return ChessGame.TeamColor.BLACK;
+        } else {
+            return null;
         }
     }
 
@@ -224,13 +233,14 @@ public class WebSocketHandler {
                 String.valueOf(move.getStartPosition().getRow()) +
                 columnToString(move.getEndPosition().getColumn()) +
                 String.valueOf(move.getEndPosition().getRow()) +
+                (move.getPromotionPiece() == null ? "" :
                 switch (move.getPromotionPiece()) {
                     case KNIGHT -> " promote to knight";
                     case BISHOP -> " promote to bishop";
                     case ROOK -> " promote to rook";
                     case QUEEN -> " promote to queen";
                     default -> "";
-                };
+                });
     }
 
     private String columnToString(int col) {
