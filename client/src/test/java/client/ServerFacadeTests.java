@@ -119,7 +119,7 @@ public class ServerFacadeTests {
     @Order(11)
     @DisplayName("Success observeGame()")
     public void successObserveGame() {
-        Assertions.assertDoesNotThrow(() -> serverFacade.observeGame(existingAuth),
+        Assertions.assertDoesNotThrow(() -> serverFacade.observeGame(existingAuth, "1"),
                 "observeGame() incorrectly threw an exception");
     }
 
