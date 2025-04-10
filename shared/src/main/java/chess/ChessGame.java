@@ -52,7 +52,7 @@ public class ChessGame {
         return Objects.hash(currentTurn, currentBoard, lastMove, lastMovePiece, movePositionCollection);
     }
 
-    public enum TeamColor {WHITE, BLACK}
+    public enum TeamColor {WHITE, BLACK, GAME_OVER}
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = currentBoard.getPiece(startPosition);

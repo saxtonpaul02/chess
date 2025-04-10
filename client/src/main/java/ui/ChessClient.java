@@ -230,7 +230,7 @@ public class ChessClient implements ServerMessageObserver {
 
     @Override
     public void loadGame(LoadGameMessage message) {
-        System.out.println(joinedGameData.game().getCurrentTurn().toString());
+        System.out.println(joinedGameData.game().getTeamTurn().toString());
         try {
             server.redrawBoard(joinedGameData.game(), getVisitorTeamColor() == ChessGame.TeamColor.BLACK);
         } catch (Exception ex) {

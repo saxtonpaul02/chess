@@ -94,9 +94,9 @@ public class WebSocketHandler {
         try {
             int gameID = command.getGameID();
             GameData gameData = gameService.getGame(command.getGameID());
-            if (gameData.game().getCurrentTurn() == GAME_OVER) {
+            if (gameData.game().getTeamTurn() == GAME_OVER) {
                 throw new Exception("Error: This game is over. No more moves allowed.");
-            } else if (getRootClientTeam(gameData, username) != gameData.game().getCurrentTurn()) {
+            } else if (getRootClientTeam(gameData, username) != gameData.game().getTeamTurn()) {
                 throw new Exception("Error: It is not your turn.");
             }
             ChessGame game = gameData.game();
@@ -123,7 +123,7 @@ public class WebSocketHandler {
                         new NotificationMessage(String.format("%s has been checkmated", opponent));
                 sendNotificationMessage(message3, session);
                 broadcastNotificationMessage(gameID, message3, session);
-                game.setCurrentTurn(GAME_OVER);
+                game.setTeamTurn(GAME_OVER);
             } else if (isinCheck(gameData)) {
                 String opponent = opponentUsername(gameData);
                 NotificationMessage message4 =
@@ -136,7 +136,7 @@ public class WebSocketHandler {
                         new NotificationMessage(String.format("%s has been stalemated", opponent));
                 sendNotificationMessage(message5, session);
                 broadcastNotificationMessage(gameID, message5, session);
-                game.setCurrentTurn(GAME_OVER);
+                game.setTeamTurn(GAME_OVER);
             }
             gameService.updateGame(gameData, null, null);
         } catch (Exception ex) {
@@ -152,10 +152,10 @@ public class WebSocketHandler {
             ChessGame game = gameData.game();
             if (getRootClientTeam(gameData, username) == null) {
                 throw new Exception("Error: observer cannot resign the game.");
-            } else if (game.getCurrentTurn() == GAME_OVER) {
+            } else if (game.getTeamTurn() == GAME_OVER) {
                 throw new Exception("Error: this game is already over.");
             }
-            game.setCurrentTurn(GAME_OVER);
+            game.setTeamTurn(GAME_OVER);
             NotificationMessage message = new NotificationMessage(String.format("%s has resigned the game", username));
             sendNotificationMessage(message, session);
             broadcastNotificationMessage(gameID, message, session);
@@ -201,7 +201,7 @@ public class WebSocketHandler {
     }
 
     private String opponentUsername(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
         if (teamTurn == WHITE) {
             return gameData.whiteUsername();
         } else {
@@ -210,17 +210,17 @@ public class WebSocketHandler {
     }
 
     private boolean isInCheckmate(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
         return gameData.game().isInCheckmate(teamTurn);
     }
 
     private boolean isinCheck(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
         return gameData.game().isInCheck(teamTurn);
     }
 
     private boolean isInStalemate(GameData gameData) {
-        ChessGame.TeamColor teamTurn = gameData.game().getCurrentTurn();
+        ChessGame.TeamColor teamTurn = gameData.game().getTeamTurn();
         return gameData.game().isInStalemate(teamTurn);
     }
 
