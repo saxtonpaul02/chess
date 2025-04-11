@@ -9,6 +9,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class ChessClient implements ServerMessageObserver {
     private String visitorName = null;
@@ -154,12 +155,18 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     public String resignGame() throws Exception {
-        try {
-            server.resignGame(visitorAuthToken, joinedGameData.gameID());
-            return "\n";
-        } catch (Exception ex) {
-            throw new Exception("Error resigning the game, please try again.\n");
+        System.out.println("Are you sure you want to resign? <yes or no>\n");
+        Scanner scanner = new Scanner(System.in);
+        String line = scanner.nextLine();
+        if (line.equals("yes") || line.equals("y")) {
+            try {
+                server.resignGame(visitorAuthToken, joinedGameData.gameID());
+                return "\n";
+            } catch (Exception ex) {
+                throw new Exception("Error resigning the game, please try again.\n");
+            }
         }
+        return "";
     }
 
     public String leaveGame() throws Exception {

@@ -190,14 +190,14 @@ public class ServerFacade {
     }
 
     private static String drawGame(ChessGame game, boolean flip, ChessPosition position) {
-        StringBuilder response = new StringBuilder(" \u2003 ");
+        StringBuilder response = new StringBuilder("\n \u2003 ");
         for (int i = 0; i < 10; i++) {
             if (i == 0 || i == 9) {
                 response.append(getRowBorder(i, flip));
             } else {
                 for (int j = 0; j < 10; j++) {
                     response.append(getLeftColumnBorder(i, j, flip));
-                    response.append(getSquareString(9-i, j, flip, game, position));
+                    response.append(getSquareString(9 - i, j, flip, game, position));
                     response.append(getPieceString(i, j, game.getBoard(), flip));
                     response.append(getRightColumnBorder(i, j, flip));
                 }
@@ -252,41 +252,21 @@ public class ServerFacade {
 
     private static String getSquareString(int row, int column, boolean flip, ChessGame game, ChessPosition position) {
         if (position == null) {
-            String square = "\u001b[100m";
-            if (!flip) {
-                if ((row + column) % 2 != 0) {
-                    square = "\u001b[107m";
-                }
-            } else {
-                if ((row + column) % 2 == 0) {
-                    square = "\u001b[107m";
-                }
-            }
-            return square;
+            return getNormalSquares(row, column, flip);
         } else {
             Collection<ChessMove> validMoves = game.validMoves(position);
             String square;
-            if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
-                square = "\u001b[44m";
-                if (!flip) {
-                    if ((row + column) % 2 != 0) {
-                        square = "\u001b[104m";
-                    }
+            if (!flip) {
+                if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
+                    square = getWhiteHighlightedSquares(row, column);
                 } else {
-                    if ((row + column) % 2 == 0) {
-                        square = "\u001b[104m";
-                    }
+                    square = getNormalSquares(row, column, false);
                 }
             } else {
-                square = "\u001b[100m";
-                if (!flip) {
-                    if ((row + column) % 2 != 0) {
-                        square = "\u001b[107m";
-                    }
+                if (isPositionAValidMove(validMoves, new ChessPosition(9 - row, 9 - column))) {
+                    square = getBlackHighlightedSquares(row, column);
                 } else {
-                    if ((row + column) % 2 == 0) {
-                        square = "\u001b[107m";
-                    }
+                    square = getNormalSquares(row, column, true);
                 }
             }
             return square;
@@ -334,6 +314,36 @@ public class ServerFacade {
             case QUEEN -> " ♕ ";
             case PAWN -> " ♙ ";
         };
+    }
+
+    private static String getNormalSquares(int row, int column, boolean flip) {
+        String square = "\u001b[100m";
+        if (!flip) {
+            if ((row + column) % 2 != 0) {
+                square = "\u001b[107m";
+            }
+        } else {
+            if ((row + column) % 2 == 0) {
+                square = "\u001b[107m";
+            }
+        }
+        return square;
+    }
+
+    private static String getWhiteHighlightedSquares(int row, int column) {
+        String square = "\u001b[44m";
+        if ((row + column) % 2 != 0) {
+            square = "\u001b[104m";
+        }
+        return square;
+    }
+
+    private static String getBlackHighlightedSquares(int row, int column) {
+        String square = "\u001b[44m";
+        if ((row + column) % 2 == 0) {
+            square = "\u001b[104m";
+        }
+        return square;
     }
 
     private ChessPosition stringToPosition(String pos) throws Exception {
