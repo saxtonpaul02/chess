@@ -155,7 +155,7 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     public String resignGame() throws Exception {
-        System.out.println("Are you sure you want to resign? <yes or no>\n");
+        System.out.println("Are you sure you want to resign? <yes or no>");
         Scanner scanner = new Scanner(System.in);
         String line = scanner.nextLine();
         if (line.equals("yes") || line.equals("y")) {
