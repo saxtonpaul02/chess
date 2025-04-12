@@ -257,13 +257,17 @@ public class ServerFacade {
             Collection<ChessMove> validMoves = game.validMoves(position);
             String square;
             if (!flip) {
-                if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
+                if (position.getRow() == row && position.getColumn() == column) {
+                    square = "\u001b[48;5;22m";
+                } else if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
                     square = getWhiteHighlightedSquares(row, column);
                 } else {
                     square = getNormalSquares(row, column, false);
                 }
             } else {
-                if (isPositionAValidMove(validMoves, new ChessPosition(9 - row, 9 - column))) {
+                if (position.getRow() == 9 - row && position.getColumn() == 9 - column) {
+                    square = "\u001b[48;5;22m";
+                } else if (isPositionAValidMove(validMoves, new ChessPosition(9 - row, 9 - column))) {
                     square = getBlackHighlightedSquares(row, column);
                 } else {
                     square = getNormalSquares(row, column, true);
@@ -296,23 +300,23 @@ public class ServerFacade {
 
     private static String blackPiecesToString(ChessPiece.PieceType piece) {
         return switch (piece) {
-            case ROOK -> " ♜ ";
-            case KNIGHT -> " ♞ ";
-            case BISHOP -> " ♝ ";
-            case KING -> " ♚ ";
-            case QUEEN -> " ♛ ";
-            case PAWN -> " ♟ ";
+            case ROOK -> " \u001b[38;5;94m♜\u001b[39m ";
+            case KNIGHT -> " \u001b[38;5;94m♞\u001b[39m ";
+            case BISHOP -> " \u001b[38;5;94m♝\u001b[39m ";
+            case KING -> " \u001b[38;5;94m♚\u001b[39m ";
+            case QUEEN -> " \u001b[38;5;94m♛\u001b[39m ";
+            case PAWN -> " \u001b[38;5;94m♟\u001b[39m ";
         };
     }
 
     private static String whitePiecesToString(ChessPiece.PieceType piece) {
         return switch (piece) {
-            case ROOK -> " ♖ ";
-            case KNIGHT -> " ♘ ";
-            case BISHOP -> " ♗ ";
-            case KING -> " ♔ ";
-            case QUEEN -> " ♕ ";
-            case PAWN -> " ♙ ";
+            case ROOK -> " \u001b[38;5;226m♜\u001b[39m ";
+            case KNIGHT -> " \u001b[38;5;226m♞\u001b[39m ";
+            case BISHOP -> " \u001b[38;5;226m♝\u001b[39m ";
+            case KING -> " \u001b[38;5;226m♚\u001b[39m ";
+            case QUEEN -> " \u001b[38;5;226m♛\u001b[39m ";
+            case PAWN -> " \u001b[38;5;226m♟\u001b[39m ";
         };
     }
 
