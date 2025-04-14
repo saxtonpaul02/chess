@@ -246,15 +246,18 @@ public class ChessClient implements ServerMessageObserver {
         } catch (Exception ex) {
             System.out.println("Error loading game, please try again.");
         }
+        System.out.printf("\n[%s] >>> ", state);
     }
 
     @Override
     public void notify(NotificationMessage message) {
         System.out.println(message.getMessage());
+        System.out.printf("\n[%s] >>> ", state);
     }
 
     @Override
     public void notifyError(ErrorMessage message) {
         System.out.println(message.getMessage());
+        System.out.printf("\n[%s] >>> ", state);
     }
 }

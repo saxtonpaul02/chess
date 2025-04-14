@@ -258,7 +258,7 @@ public class ServerFacade {
             String square;
             if (!flip) {
                 if (position.getRow() == row && position.getColumn() == column) {
-                    square = "\u001b[48;5;22m";
+                    square = "\u001b[48;5;3m";
                 } else if (isPositionAValidMove(validMoves, new ChessPosition(row, column))) {
                     square = getWhiteHighlightedSquares(row, column);
                 } else {
@@ -266,7 +266,7 @@ public class ServerFacade {
                 }
             } else {
                 if (position.getRow() == 9 - row && position.getColumn() == 9 - column) {
-                    square = "\u001b[48;5;22m";
+                    square = "\u001b[48;5;3m";
                 } else if (isPositionAValidMove(validMoves, new ChessPosition(9 - row, 9 - column))) {
                     square = getBlackHighlightedSquares(row, column);
                 } else {
@@ -300,52 +300,52 @@ public class ServerFacade {
 
     private static String blackPiecesToString(ChessPiece.PieceType piece) {
         return switch (piece) {
-            case ROOK -> " \u001b[38;5;94m♜\u001b[39m ";
-            case KNIGHT -> " \u001b[38;5;94m♞\u001b[39m ";
-            case BISHOP -> " \u001b[38;5;94m♝\u001b[39m ";
-            case KING -> " \u001b[38;5;94m♚\u001b[39m ";
-            case QUEEN -> " \u001b[38;5;94m♛\u001b[39m ";
-            case PAWN -> " \u001b[38;5;94m♟\u001b[39m ";
+            case ROOK -> " \u001b[30m♜\u001b[39m ";
+            case KNIGHT -> " \u001b[30m♞\u001b[39m ";
+            case BISHOP -> " \u001b[30m♝\u001b[39m ";
+            case KING -> " \u001b[30m♚\u001b[39m ";
+            case QUEEN -> " \u001b[30m♛\u001b[39m ";
+            case PAWN -> " \u001b[30m♟\u001b[39m ";
         };
     }
 
     private static String whitePiecesToString(ChessPiece.PieceType piece) {
         return switch (piece) {
-            case ROOK -> " \u001b[38;5;226m♜\u001b[39m ";
-            case KNIGHT -> " \u001b[38;5;226m♞\u001b[39m ";
-            case BISHOP -> " \u001b[38;5;226m♝\u001b[39m ";
-            case KING -> " \u001b[38;5;226m♚\u001b[39m ";
-            case QUEEN -> " \u001b[38;5;226m♛\u001b[39m ";
-            case PAWN -> " \u001b[38;5;226m♟\u001b[39m ";
+            case ROOK -> " \u001b[97m♜\u001b[39m ";
+            case KNIGHT -> " \u001b[97m♞\u001b[39m ";
+            case BISHOP -> " \u001b[97m♝\u001b[39m ";
+            case KING -> " \u001b[97m♚\u001b[39m ";
+            case QUEEN -> " \u001b[97m♛\u001b[39m ";
+            case PAWN -> " \u001b[97m♟\u001b[39m ";
         };
     }
 
     private static String getNormalSquares(int row, int column, boolean flip) {
-        String square = "\u001b[100m";
+        String square = "\u001b[48;5;8m";
         if (!flip) {
             if ((row + column) % 2 != 0) {
-                square = "\u001b[107m";
+                square = "\u001b[44m";
             }
         } else {
             if ((row + column) % 2 == 0) {
-                square = "\u001b[107m";
+                square = "\u001b[44m";
             }
         }
         return square;
     }
 
     private static String getWhiteHighlightedSquares(int row, int column) {
-        String square = "\u001b[44m";
+        String square = "\u001b[48;5;124m";
         if ((row + column) % 2 != 0) {
-            square = "\u001b[104m";
+            square = "\u001b[48;5;9m";
         }
         return square;
     }
 
     private static String getBlackHighlightedSquares(int row, int column) {
-        String square = "\u001b[44m";
+        String square = "\u001b[48;5;124m";
         if ((row + column) % 2 == 0) {
-            square = "\u001b[104m";
+            square = "\u001b[48;5;9m";
         }
         return square;
     }
